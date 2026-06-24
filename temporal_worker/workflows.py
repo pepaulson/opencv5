@@ -1,7 +1,7 @@
 from datetime import timedelta
 from temporalio import workflow
 with workflow.unsafe.imports_passed_through():
-    from activities import ingest_image, process_image, save_output, process_lesson2_image
+    from activities import ingest_image, process_image, save_output, process_lesson2_image, process_grayscale, process_sobel, process_canny
 
 @workflow.defn
 class LessonOneWorkflow:
@@ -95,3 +95,55 @@ class VisionCalibrationWorkflow:
 
         final_result["sweep_results"] = results
         return final_result
+
+@workflow.defn
+class PathfinderEdgeWorkflow:
+    @workflow.run
+    async def run(self, payload: dict) -> dict:
+        input_filename = payload.get("input_filename", "drone_feed.png")
+        kernel_size = payload.get("kernel_size", 5)
+        threshold1 = payload.get("threshold1", 100)
+        threshold2 = payload.get("threshold2", 200)
+
+        # 1. Ingest
+        input_path = await workflow.execute_activity(
+            ingest_image,
+            input_filename,
+            start_to_close_timeout=timedelta(seconds=10),
+        )
+
+        # 2. Grayscale (Activity 1)
+        gray_res = await workflow.execute_activity(
+            process_grayscale,
+            {"input_path": input_path, "output_filename": "l3_step1_gray.png"},
+            start_to_close_timeout=timedelta(seconds=10),
+        )
+
+        # 3. Gaussian Blur (Activity 2)
+        blur_res = await workflow.execute_activity(
+            process_lesson2_image,
+            {"input_path": gray_res["output_path"], "output_filename": "l3_step2_blur.png", "filter_type": "Gaussian", "kernel_size": kernel_size},
+            start_to_close_timeout=timedelta(seconds=30),
+        )
+
+        # 4. Sobel (Activity 3)
+        sobel_res = await workflow.execute_activity(
+            process_sobel,
+            {"input_path": blur_res["output_path"], "output_filename": "l3_step3_sobel.png"},
+            start_to_close_timeout=timedelta(seconds=10),
+        )
+
+        # 5. Canny (Activity 4)
+        canny_res = await workflow.execute_activity(
+            process_canny,
+            {"input_path": sobel_res["output_path"], "output_filename": "l3_step4_canny.png", "threshold1": threshold1, "threshold2": threshold2},
+            start_to_close_timeout=timedelta(seconds=10),
+        )
+
+        return {
+            "status": "success",
+            "gray_path": gray_res["output_path"],
+            "blur_path": blur_res["output_path"],
+            "sobel_path": sobel_res["output_path"],
+            "canny_path": canny_res["output_path"]
+        }

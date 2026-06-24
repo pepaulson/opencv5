@@ -55,3 +55,33 @@ async def process_lesson2_image(params: dict) -> dict:
         "filter_type": filter_type,
         "kernel_size": kernel_size
     }
+
+@activity.defn
+async def process_grayscale(params: dict) -> dict:
+    input_path = params["input_path"]
+    output_filename = params.get("output_filename", "gray.png")
+    output_path = f"/app/data/output/{output_filename}"
+    activity.logger.info(f"Converting image {input_path} to grayscale")
+    result_path = cv_engine.run_grayscale(input_path, output_path)
+    return {"output_path": result_path}
+
+@activity.defn
+async def process_sobel(params: dict) -> dict:
+    input_path = params["input_path"]
+    output_filename = params.get("output_filename", "sobel.png")
+    output_path = f"/app/data/output/{output_filename}"
+    activity.logger.info(f"Applying Sobel to {input_path}")
+    result_path = cv_engine.run_lesson_3_sobel(input_path, output_path)
+    return {"output_path": result_path}
+
+@activity.defn
+async def process_canny(params: dict) -> dict:
+    input_path = params["input_path"]
+    output_filename = params.get("output_filename", "canny.png")
+    output_path = f"/app/data/output/{output_filename}"
+    t1 = params.get("threshold1", 100)
+    t2 = params.get("threshold2", 200)
+    activity.logger.info(f"Applying Canny to {input_path} with thresholds {t1}, {t2}")
+    result_path = cv_engine.run_lesson_3_canny(input_path, output_path, t1, t2)
+    return {"output_path": result_path}
+

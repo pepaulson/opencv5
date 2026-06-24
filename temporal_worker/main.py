@@ -2,8 +2,8 @@ import asyncio
 import os
 from temporalio.client import Client
 from temporalio.worker import Worker
-from activities import ingest_image, process_image, save_output, process_lesson2_image
-from workflows import LessonOneWorkflow, VisionCalibrationWorkflow
+from activities import ingest_image, process_image, save_output, process_lesson2_image, process_grayscale, process_sobel, process_canny
+from workflows import LessonOneWorkflow, VisionCalibrationWorkflow, PathfinderEdgeWorkflow
 
 async def main():
     temporal_host = os.getenv("TEMPORAL_HOST", "localhost:7233")
@@ -13,8 +13,8 @@ async def main():
     worker = Worker(
         client,
         task_queue="cv-learning-tasks",
-        workflows=[LessonOneWorkflow, VisionCalibrationWorkflow],
-        activities=[ingest_image, process_image, save_output, process_lesson2_image],
+        workflows=[LessonOneWorkflow, VisionCalibrationWorkflow, PathfinderEdgeWorkflow],
+        activities=[ingest_image, process_image, save_output, process_lesson2_image, process_grayscale, process_sobel, process_canny],
     )
     
     print("Starting Temporal worker...")

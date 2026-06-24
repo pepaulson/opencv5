@@ -75,27 +75,68 @@ def main():
             payload["kernel_sizes"] = [kernel_size]
             payload["is_sweep"] = False
             payload["filter_type"] = filter_type
+    elif lesson.get("id") == 3:
+        kernel_size = st.slider("Gaussian Blur Kernel Size (Noise filtering before Canny)", 3, 31, lesson.get("default_kernel_size", 5), step=2)
+        threshold1 = st.slider("Canny Threshold 1 (Lower bound)", 0, 255, lesson.get("default_threshold1", 100))
+        threshold2 = st.slider("Canny Threshold 2 (Upper bound)", 0, 255, lesson.get("default_threshold2", 200))
+        payload["kernel_size"] = kernel_size
+        payload["threshold1"] = threshold1
+        payload["threshold2"] = threshold2
     
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.subheader("Input Image")
-        if os.path.exists(input_path):
-            img = Image.open(input_path)
-            st.image(img, use_column_width=True)
-        else:
-            st.warning(f"Input image not found at {input_path}")
-            
-    with col2:
-        st.subheader("Output Image")
+    if lesson.get("id") == 3:
+        st.subheader("Pipeline Visualizer")
         
-        # We clear the previous output so the user sees the refresh
+        step_cols = st.columns(4)
+        with step_cols[0]:
+            st.markdown("**(1) Grayscale**")
+        with step_cols[1]:
+            st.markdown("**(2) Gaussian Blur**")
+        with step_cols[2]:
+            st.markdown("**(3) Sobel Gradients**")
+        with step_cols[3]:
+            st.markdown("**(4) Canny Edges**")
+            
+        selected_step = st.radio("View Intermediate Artifact:", ["Input", "Grayscale", "Blur", "Sobel", "Canny"], horizontal=True)
+        
         output_placeholder = st.empty()
-        if os.path.exists(output_path):
-            img = Image.open(output_path)
-            output_placeholder.image(img, use_column_width=True)
-        else:
-            output_placeholder.info("Run the workflow to generate output.")
+        
+        def show_artifact():
+            paths = {
+                "Input": input_path,
+                "Grayscale": os.path.join(DATA_DIR, "output", "l3_step1_gray.png"),
+                "Blur": os.path.join(DATA_DIR, "output", "l3_step2_blur.png"),
+                "Sobel": os.path.join(DATA_DIR, "output", "l3_step3_sobel.png"),
+                "Canny": os.path.join(DATA_DIR, "output", "l3_step4_canny.png"),
+            }
+            p = paths[selected_step]
+            if os.path.exists(p):
+                img = Image.open(p)
+                output_placeholder.image(img, use_column_width=True)
+            else:
+                output_placeholder.info(f"Artifact for {selected_step} not available. Run the workflow.")
+                
+        show_artifact()
+        
+    else:
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.subheader("Input Image")
+            if os.path.exists(input_path):
+                img = Image.open(input_path)
+                st.image(img, use_column_width=True)
+            else:
+                st.warning(f"Input image not found at {input_path}")
+                
+        with col2:
+            st.subheader("Output Image")
+            
+            output_placeholder = st.empty()
+            if os.path.exists(output_path):
+                img = Image.open(output_path)
+                output_placeholder.image(img, use_column_width=True)
+            else:
+                output_placeholder.info("Run the workflow to generate output.")
             
     st.markdown("---")
     
@@ -114,10 +155,13 @@ def main():
                     output_path = result["output_path"]
                 
                 # Update output image
-                if os.path.exists(output_path):
-                    # Force image reload by appending a query param or just re-opening
-                    img = Image.open(output_path)
-                    output_placeholder.image(img, use_column_width=True)
+                if lesson.get("id") == 3:
+                    show_artifact()
+                else:
+                    if os.path.exists(output_path):
+                        # Force image reload by appending a query param or just re-opening
+                        img = Image.open(output_path)
+                        output_placeholder.image(img, use_column_width=True)
                     
                 if isinstance(result, dict) and "sweep_results" in result:
                     st.subheader("Performance Profiling (C++ Execution)")

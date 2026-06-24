@@ -26,3 +26,18 @@ lessons:
     input_filename: "noisy_part.png"
     output_filename: "filtered_part.png"
     default_kernel_size: 5
+
+  - id: 3
+    title: "Lesson 3: The Borderline"
+    narrative: |
+      **Mission 3: Project Pathfinder**
+      
+      An autonomous delivery drone has lost its primary GPS navigation and must rely on its backup visual odometry system to follow roads and avoid structural hazards.
+      
+      Your mission is to build a multi-stage edge detection pipeline to identify distinct boundaries in the drone's camera feed. You will use Grayscale, Gaussian Blur, Sobel gradients, and Canny edge detection.
+    workflow_name: "PathfinderEdgeWorkflow"
+    input_filename: "drone_feed.png"
+    output_filename: "l3_step4_canny.png"
+    default_kernel_size: 5
+    default_threshold1: 100
+    default_threshold2: 200
