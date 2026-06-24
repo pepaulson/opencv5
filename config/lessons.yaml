@@ -1,0 +1,15 @@
+lessons:
+  - id: 1
+    title: "Lesson 1: The Threshold Matrix"
+    narrative: |
+      **Mission 1: Satellite De-noising**
+      
+      A spy satellite has captured a blurry, noisy image of a hidden facility.
+      Your mission is to process this raw image using OpenCV 5 native C++ algorithms.
+      
+      You will convert the image from RGB to Grayscale, and then apply a Binary Threshold 
+      to isolate the key structures.
+    workflow_name: "LessonOneWorkflow"
+    input_filename: "input.png"
+    output_filename: "output.png"
+    default_threshold: 127

@@ -1,0 +1,3 @@
+/app/src_cpp/build/CMakeFiles/cv_engine.dir
+/app/src_cpp/build/CMakeFiles/edit_cache.dir
+/app/src_cpp/build/CMakeFiles/rebuild_cache.dir

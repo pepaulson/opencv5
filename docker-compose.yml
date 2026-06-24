@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  temporal:
+    image: temporalio/auto-setup:latest
+    ports:
+      - "7233:7233"
+    environment:
+      - DB=postgres12
+      - DB_PORT=5432
+      - POSTGRES_USER=temporal
+      - POSTGRES_PWD=temporal
+      - POSTGRES_SEEDS=postgres
+      - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development.yaml
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:13
+    environment:
+      - POSTGRES_USER=temporal
+      - POSTGRES_PASSWORD=temporal
+    ports:
+      - "5432:5432"
+
+  temporal-ui:
+    image: temporalio/ui:latest
+    environment:
+      - TEMPORAL_ADDRESS=temporal:7233
+    ports:
+      - "8080:8080"
+    depends_on:
+      - temporal
+
+  cv_worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    volumes:
+      - ./src_cpp:/app/src_cpp
+      - ./temporal_worker:/app/temporal_worker
+      - ./data:/app/data
+    environment:
+      - TEMPORAL_HOST=temporal:7233
+    depends_on:
+      - temporal
+
+  web_ui:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./frontend:/app/frontend
+      - ./config:/app/config
+      - ./data:/app/data
+    environment:
+      - TEMPORAL_HOST=temporal:7233
+    depends_on:
+      - temporal
+      - cv_worker
+    command: ["streamlit", "run", "frontend/app.py", "--server.address=0.0.0.0"]
