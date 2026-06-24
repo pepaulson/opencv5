@@ -53,7 +53,28 @@ def main():
     output_path = os.path.join(DATA_DIR, lesson["output_filename"])
     
     # UI Controls
-    threshold = st.slider("Select Threshold Value", 0, 255, lesson.get("default_threshold", 127))
+    payload = {
+        "input_filename": lesson["input_filename"],
+        "output_filename": lesson["output_filename"]
+    }
+    
+    if lesson.get("id", 1) == 1:
+        threshold = st.slider("Select Threshold Value", 0, 255, lesson.get("default_threshold", 127))
+        payload["threshold"] = threshold
+    elif lesson.get("id") == 2:
+        filter_type = st.radio("Select Filter Type", ["Gaussian", "Median"])
+        is_sweep = st.checkbox("Run Parameter Sweep (Multiple Kernel Sizes)", value=False)
+        if is_sweep:
+            kernel_sizes_str = st.text_input("Kernel Sizes (comma separated, odd numbers)", "3, 5, 7, 15")
+            kernel_sizes = [int(k.strip()) for k in kernel_sizes_str.split(",") if k.strip().isdigit() and int(k.strip()) % 2 != 0]
+            payload["kernel_sizes"] = kernel_sizes
+            payload["is_sweep"] = True
+            payload["filter_type"] = filter_type
+        else:
+            kernel_size = st.slider("Select Kernel Size (Odd numbers only)", 3, 31, lesson.get("default_kernel_size", 5), step=2)
+            payload["kernel_sizes"] = [kernel_size]
+            payload["is_sweep"] = False
+            payload["filter_type"] = filter_type
     
     col1, col2 = st.columns(2)
     
@@ -84,11 +105,6 @@ def main():
             return
             
         with st.spinner("Executing Workflow across Python & C++ bridge..."):
-            payload = {
-                "input_filename": lesson["input_filename"],
-                "output_filename": lesson["output_filename"],
-                "threshold": threshold
-            }
             try:
                 result, workflow_id = run_workflow(lesson["workflow_name"], payload)
                 st.success("Workflow completed successfully!")
@@ -98,6 +114,11 @@ def main():
                     # Force image reload by appending a query param or just re-opening
                     img = Image.open(output_path)
                     output_placeholder.image(img, use_column_width=True)
+                    
+                if isinstance(result, dict) and "sweep_results" in result:
+                    st.subheader("Performance Profiling (C++ Execution)")
+                    for res in result["sweep_results"]:
+                        st.write(f"Kernel Size: {res['kernel_size']}x{res['kernel_size']} | Filter: {res['filter_type']} | Time: **{res['execution_time_ms']:.2f} ms**")
                     
                 st.info(f"Deep Dive: [View Workflow History in Temporal UI](http://localhost:8080/namespaces/default/workflows/{workflow_id})")
             except Exception as e:

@@ -9,6 +9,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/app/src_cpp/lesson1.cpp" "CMakeFiles/cv_engine.dir/lesson1.cpp.o" "gcc" "CMakeFiles/cv_engine.dir/lesson1.cpp.o.d"
+  "/app/src_cpp/lesson2_filters.cpp" "CMakeFiles/cv_engine.dir/lesson2_filters.cpp.o" "gcc" "CMakeFiles/cv_engine.dir/lesson2_filters.cpp.o.d"
   )
 
 # Targets to which this target links which contain Fortran sources.

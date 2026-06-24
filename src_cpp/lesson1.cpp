@@ -30,8 +30,12 @@ std::string run_lesson_1(const std::string& input_path, const std::string& outpu
     return output_path;
 }
 
+extern void init_lesson2_filters(py::module_ &m);
+
 PYBIND11_MODULE(cv_engine, m) {
     m.doc() = "OpenCV C++ core logic for Temporal Learning Lab"; // optional module docstring
     m.def("run_lesson_1", &run_lesson_1, "A function that processes an image for Lesson 1",
           py::arg("input_path"), py::arg("output_path"), py::arg("threshold_value"));
+          
+    init_lesson2_filters(m);
 }

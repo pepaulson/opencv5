@@ -33,7 +33,7 @@ execute_process(
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
-add_library(cv_engine SHARED lesson1.cpp)
+add_library(cv_engine SHARED lesson1.cpp lesson2_filters.cpp)
 target_link_libraries(cv_engine ${OpenCV_LIBS})
 
 # Set the output name with python extension suffix (e.g. .cpython-310-x86_64-linux-gnu.so)

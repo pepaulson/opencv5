@@ -153,6 +153,30 @@ lesson1.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/cv_engine.dir/build.make CMakeFiles/cv_engine.dir/lesson1.cpp.s
 .PHONY : lesson1.cpp.s
 
+lesson2_filters.o: lesson2_filters.cpp.o
+.PHONY : lesson2_filters.o
+
+# target to build an object file
+lesson2_filters.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cv_engine.dir/build.make CMakeFiles/cv_engine.dir/lesson2_filters.cpp.o
+.PHONY : lesson2_filters.cpp.o
+
+lesson2_filters.i: lesson2_filters.cpp.i
+.PHONY : lesson2_filters.i
+
+# target to preprocess a source file
+lesson2_filters.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cv_engine.dir/build.make CMakeFiles/cv_engine.dir/lesson2_filters.cpp.i
+.PHONY : lesson2_filters.cpp.i
+
+lesson2_filters.s: lesson2_filters.cpp.s
+.PHONY : lesson2_filters.s
+
+# target to generate assembly for a file
+lesson2_filters.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cv_engine.dir/build.make CMakeFiles/cv_engine.dir/lesson2_filters.cpp.s
+.PHONY : lesson2_filters.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -165,6 +189,9 @@ help:
 	@echo "... lesson1.o"
 	@echo "... lesson1.i"
 	@echo "... lesson1.s"
+	@echo "... lesson2_filters.o"
+	@echo "... lesson2_filters.i"
+	@echo "... lesson2_filters.s"
 .PHONY : help
 
 

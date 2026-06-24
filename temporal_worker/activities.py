@@ -33,3 +33,25 @@ async def save_output(output_path: str) -> dict:
         "output_path": output_path,
         "message": "Image processed successfully."
     }
+
+@activity.defn
+async def process_lesson2_image(params: dict) -> dict:
+    input_path = params["input_path"]
+    output_filename = params.get("output_filename", "filtered.png")
+    output_path = f"/app/data/{output_filename}"
+    filter_type = params.get("filter_type", "Gaussian")
+    kernel_size = params.get("kernel_size", 5)
+    
+    activity.logger.info(f"Processing image {input_path} with {filter_type} filter (kernel: {kernel_size})")
+    
+    import time
+    start = time.time()
+    result_path = cv_engine.run_lesson_2_filter(input_path, output_path, filter_type, kernel_size)
+    end = time.time()
+    
+    return {
+        "output_path": result_path,
+        "execution_time_ms": (end - start) * 1000.0,
+        "filter_type": filter_type,
+        "kernel_size": kernel_size
+    }

@@ -13,3 +13,16 @@ lessons:
     input_filename: "input.png"
     output_filename: "output.png"
     default_threshold: 127
+
+  - id: 2
+    title: "Lesson 2: The Signal and the Noise"
+    narrative: |
+      **Mission 2: Vision Sensor Calibration**
+      
+      An automated quality inspection station on an assembly line is receiving noisy image data from an industrial vision sensor. Electromagnetic interference and factory floor vibrations are causing severe artifacting on the image feed.
+      
+      Your mission is to use spatial filters to clean the corrupted images of machined parts so the downstream defect classification algorithms can function properly. You must balance image clarity with execution speed to maintain line throughput.
+    workflow_name: "VisionCalibrationWorkflow"
+    input_filename: "noisy_part.png"
+    output_filename: "filtered_part.png"
+    default_kernel_size: 5
