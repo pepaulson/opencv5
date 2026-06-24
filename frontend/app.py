@@ -49,8 +49,8 @@ def main():
     st.header(lesson["title"])
     st.markdown(lesson["narrative"])
     
-    input_path = os.path.join(DATA_DIR, lesson["input_filename"])
-    output_path = os.path.join(DATA_DIR, lesson["output_filename"])
+    input_path = os.path.join(DATA_DIR, "input", lesson["input_filename"])
+    output_path = os.path.join(DATA_DIR, "output", lesson["output_filename"])
     
     # UI Controls
     payload = {
@@ -108,6 +108,10 @@ def main():
             try:
                 result, workflow_id = run_workflow(lesson["workflow_name"], payload)
                 st.success("Workflow completed successfully!")
+                
+                # Update output path if workflow returned it
+                if isinstance(result, dict) and "output_path" in result:
+                    output_path = result["output_path"]
                 
                 # Update output image
                 if os.path.exists(output_path):

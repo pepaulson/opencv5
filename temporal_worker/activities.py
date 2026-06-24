@@ -5,7 +5,7 @@ import cv_engine
 @activity.defn
 async def ingest_image(input_filename: str) -> str:
     activity.logger.info(f"Ingesting image: {input_filename}")
-    input_path = f"/app/data/{input_filename}"
+    input_path = f"/app/data/input/{input_filename}"
     if not os.path.exists(input_path):
         raise FileNotFoundError(f"Input image not found: {input_path}")
     return input_path
@@ -14,7 +14,7 @@ async def ingest_image(input_filename: str) -> str:
 async def process_image(params: dict) -> str:
     input_path = params["input_path"]
     output_filename = params.get("output_filename", "output.png")
-    output_path = f"/app/data/{output_filename}"
+    output_path = f"/app/data/output/{output_filename}"
     threshold_value = params.get("threshold", 127)
     
     activity.logger.info(f"Processing image {input_path} with threshold {threshold_value}")
@@ -38,7 +38,7 @@ async def save_output(output_path: str) -> dict:
 async def process_lesson2_image(params: dict) -> dict:
     input_path = params["input_path"]
     output_filename = params.get("output_filename", "filtered.png")
-    output_path = f"/app/data/{output_filename}"
+    output_path = f"/app/data/output/{output_filename}"
     filter_type = params.get("filter_type", "Gaussian")
     kernel_size = params.get("kernel_size", 5)
     
