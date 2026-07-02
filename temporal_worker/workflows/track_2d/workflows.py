@@ -1,7 +1,7 @@
 from datetime import timedelta
 from temporalio import workflow
 with workflow.unsafe.imports_passed_through():
-    from activities import ingest_image, process_image, save_output, process_lesson2_image, process_grayscale, process_sobel, process_canny, process_lesson4_contours
+    from .activities import ingest_image, process_image, save_output, process_lesson2_image, process_grayscale, process_sobel, process_canny, process_lesson4_contours
 
 @workflow.defn
 class LessonOneWorkflow:

@@ -1,1 +1,6 @@
 data/output/
+
+src_cpp/build/
+*.so
+*.pyc
+__pycache__/

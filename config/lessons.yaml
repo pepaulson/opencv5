@@ -54,3 +54,15 @@ lessons:
     input_filename: "conveyor_parts.png"
     output_filename: "conveyor_parts.png"
     default_min_area: 100
+
+  - id: 5
+    title: "Lesson 5: Part Identification & Tracking"
+    narrative: |
+      **Mission 5: Target Acquisition**
+      
+      A conveyor belt is moving mixed components. An overhead industrial vision sensor needs to identify a specific, highly detailed component (the "target") regardless of its rotation, scale, or if it is partially obscured by other parts.
+      
+      Your mission is to use the ORB algorithm to detect keypoints on a reference image, and match them against the live camera feed. Calculate the homography matrix to draw a bounding box around the matched object in the live feed. Temporal will gracefully handle frames where the object is occluded and retry on failures.
+    workflow_name: "PartIdentificationWorkflow"
+    input_filename: "ref_part.png"
+    output_filename: "live_feed.png"

@@ -117,113 +117,198 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named cv_engine
+# Target rules for targets named cv_lab_2d
 
 # Build rule for target.
-cv_engine: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 cv_engine
-.PHONY : cv_engine
+cv_lab_2d: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 cv_lab_2d
+.PHONY : cv_lab_2d
 
 # fast build rule for target.
-cv_engine/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cv_engine.dir/build.make CMakeFiles/cv_engine.dir/build
-.PHONY : cv_engine/fast
+cv_lab_2d/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cv_lab_2d.dir/build.make CMakeFiles/cv_lab_2d.dir/build
+.PHONY : cv_lab_2d/fast
 
-lesson1.o: lesson1.cpp.o
-.PHONY : lesson1.o
+#=============================================================================
+# Target rules for targets named cv_lab_3d
 
-# target to build an object file
-lesson1.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cv_engine.dir/build.make CMakeFiles/cv_engine.dir/lesson1.cpp.o
-.PHONY : lesson1.cpp.o
+# Build rule for target.
+cv_lab_3d: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 cv_lab_3d
+.PHONY : cv_lab_3d
 
-lesson1.i: lesson1.cpp.i
-.PHONY : lesson1.i
+# fast build rule for target.
+cv_lab_3d/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cv_lab_3d.dir/build.make CMakeFiles/cv_lab_3d.dir/build
+.PHONY : cv_lab_3d/fast
 
-# target to preprocess a source file
-lesson1.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cv_engine.dir/build.make CMakeFiles/cv_engine.dir/lesson1.cpp.i
-.PHONY : lesson1.cpp.i
-
-lesson1.s: lesson1.cpp.s
-.PHONY : lesson1.s
-
-# target to generate assembly for a file
-lesson1.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cv_engine.dir/build.make CMakeFiles/cv_engine.dir/lesson1.cpp.s
-.PHONY : lesson1.cpp.s
-
-lesson2_filters.o: lesson2_filters.cpp.o
-.PHONY : lesson2_filters.o
+2d_track/lesson1.o: 2d_track/lesson1.cpp.o
+.PHONY : 2d_track/lesson1.o
 
 # target to build an object file
-lesson2_filters.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cv_engine.dir/build.make CMakeFiles/cv_engine.dir/lesson2_filters.cpp.o
-.PHONY : lesson2_filters.cpp.o
+2d_track/lesson1.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cv_lab_2d.dir/build.make CMakeFiles/cv_lab_2d.dir/2d_track/lesson1.cpp.o
+.PHONY : 2d_track/lesson1.cpp.o
 
-lesson2_filters.i: lesson2_filters.cpp.i
-.PHONY : lesson2_filters.i
+2d_track/lesson1.i: 2d_track/lesson1.cpp.i
+.PHONY : 2d_track/lesson1.i
 
 # target to preprocess a source file
-lesson2_filters.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cv_engine.dir/build.make CMakeFiles/cv_engine.dir/lesson2_filters.cpp.i
-.PHONY : lesson2_filters.cpp.i
+2d_track/lesson1.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cv_lab_2d.dir/build.make CMakeFiles/cv_lab_2d.dir/2d_track/lesson1.cpp.i
+.PHONY : 2d_track/lesson1.cpp.i
 
-lesson2_filters.s: lesson2_filters.cpp.s
-.PHONY : lesson2_filters.s
+2d_track/lesson1.s: 2d_track/lesson1.cpp.s
+.PHONY : 2d_track/lesson1.s
 
 # target to generate assembly for a file
-lesson2_filters.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cv_engine.dir/build.make CMakeFiles/cv_engine.dir/lesson2_filters.cpp.s
-.PHONY : lesson2_filters.cpp.s
+2d_track/lesson1.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cv_lab_2d.dir/build.make CMakeFiles/cv_lab_2d.dir/2d_track/lesson1.cpp.s
+.PHONY : 2d_track/lesson1.cpp.s
 
-lesson3_edges.o: lesson3_edges.cpp.o
-.PHONY : lesson3_edges.o
+2d_track/lesson2_filters.o: 2d_track/lesson2_filters.cpp.o
+.PHONY : 2d_track/lesson2_filters.o
 
 # target to build an object file
-lesson3_edges.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cv_engine.dir/build.make CMakeFiles/cv_engine.dir/lesson3_edges.cpp.o
-.PHONY : lesson3_edges.cpp.o
+2d_track/lesson2_filters.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cv_lab_2d.dir/build.make CMakeFiles/cv_lab_2d.dir/2d_track/lesson2_filters.cpp.o
+.PHONY : 2d_track/lesson2_filters.cpp.o
 
-lesson3_edges.i: lesson3_edges.cpp.i
-.PHONY : lesson3_edges.i
+2d_track/lesson2_filters.i: 2d_track/lesson2_filters.cpp.i
+.PHONY : 2d_track/lesson2_filters.i
 
 # target to preprocess a source file
-lesson3_edges.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cv_engine.dir/build.make CMakeFiles/cv_engine.dir/lesson3_edges.cpp.i
-.PHONY : lesson3_edges.cpp.i
+2d_track/lesson2_filters.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cv_lab_2d.dir/build.make CMakeFiles/cv_lab_2d.dir/2d_track/lesson2_filters.cpp.i
+.PHONY : 2d_track/lesson2_filters.cpp.i
 
-lesson3_edges.s: lesson3_edges.cpp.s
-.PHONY : lesson3_edges.s
+2d_track/lesson2_filters.s: 2d_track/lesson2_filters.cpp.s
+.PHONY : 2d_track/lesson2_filters.s
 
 # target to generate assembly for a file
-lesson3_edges.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cv_engine.dir/build.make CMakeFiles/cv_engine.dir/lesson3_edges.cpp.s
-.PHONY : lesson3_edges.cpp.s
+2d_track/lesson2_filters.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cv_lab_2d.dir/build.make CMakeFiles/cv_lab_2d.dir/2d_track/lesson2_filters.cpp.s
+.PHONY : 2d_track/lesson2_filters.cpp.s
 
-lesson4_contours.o: lesson4_contours.cpp.o
-.PHONY : lesson4_contours.o
+2d_track/lesson3_edges.o: 2d_track/lesson3_edges.cpp.o
+.PHONY : 2d_track/lesson3_edges.o
 
 # target to build an object file
-lesson4_contours.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cv_engine.dir/build.make CMakeFiles/cv_engine.dir/lesson4_contours.cpp.o
-.PHONY : lesson4_contours.cpp.o
+2d_track/lesson3_edges.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cv_lab_2d.dir/build.make CMakeFiles/cv_lab_2d.dir/2d_track/lesson3_edges.cpp.o
+.PHONY : 2d_track/lesson3_edges.cpp.o
 
-lesson4_contours.i: lesson4_contours.cpp.i
-.PHONY : lesson4_contours.i
+2d_track/lesson3_edges.i: 2d_track/lesson3_edges.cpp.i
+.PHONY : 2d_track/lesson3_edges.i
 
 # target to preprocess a source file
-lesson4_contours.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cv_engine.dir/build.make CMakeFiles/cv_engine.dir/lesson4_contours.cpp.i
-.PHONY : lesson4_contours.cpp.i
+2d_track/lesson3_edges.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cv_lab_2d.dir/build.make CMakeFiles/cv_lab_2d.dir/2d_track/lesson3_edges.cpp.i
+.PHONY : 2d_track/lesson3_edges.cpp.i
 
-lesson4_contours.s: lesson4_contours.cpp.s
-.PHONY : lesson4_contours.s
+2d_track/lesson3_edges.s: 2d_track/lesson3_edges.cpp.s
+.PHONY : 2d_track/lesson3_edges.s
 
 # target to generate assembly for a file
-lesson4_contours.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/cv_engine.dir/build.make CMakeFiles/cv_engine.dir/lesson4_contours.cpp.s
-.PHONY : lesson4_contours.cpp.s
+2d_track/lesson3_edges.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cv_lab_2d.dir/build.make CMakeFiles/cv_lab_2d.dir/2d_track/lesson3_edges.cpp.s
+.PHONY : 2d_track/lesson3_edges.cpp.s
+
+2d_track/lesson4_contours.o: 2d_track/lesson4_contours.cpp.o
+.PHONY : 2d_track/lesson4_contours.o
+
+# target to build an object file
+2d_track/lesson4_contours.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cv_lab_2d.dir/build.make CMakeFiles/cv_lab_2d.dir/2d_track/lesson4_contours.cpp.o
+.PHONY : 2d_track/lesson4_contours.cpp.o
+
+2d_track/lesson4_contours.i: 2d_track/lesson4_contours.cpp.i
+.PHONY : 2d_track/lesson4_contours.i
+
+# target to preprocess a source file
+2d_track/lesson4_contours.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cv_lab_2d.dir/build.make CMakeFiles/cv_lab_2d.dir/2d_track/lesson4_contours.cpp.i
+.PHONY : 2d_track/lesson4_contours.cpp.i
+
+2d_track/lesson4_contours.s: 2d_track/lesson4_contours.cpp.s
+.PHONY : 2d_track/lesson4_contours.s
+
+# target to generate assembly for a file
+2d_track/lesson4_contours.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cv_lab_2d.dir/build.make CMakeFiles/cv_lab_2d.dir/2d_track/lesson4_contours.cpp.s
+.PHONY : 2d_track/lesson4_contours.cpp.s
+
+2d_track/lesson5_features.o: 2d_track/lesson5_features.cpp.o
+.PHONY : 2d_track/lesson5_features.o
+
+# target to build an object file
+2d_track/lesson5_features.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cv_lab_2d.dir/build.make CMakeFiles/cv_lab_2d.dir/2d_track/lesson5_features.cpp.o
+.PHONY : 2d_track/lesson5_features.cpp.o
+
+2d_track/lesson5_features.i: 2d_track/lesson5_features.cpp.i
+.PHONY : 2d_track/lesson5_features.i
+
+# target to preprocess a source file
+2d_track/lesson5_features.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cv_lab_2d.dir/build.make CMakeFiles/cv_lab_2d.dir/2d_track/lesson5_features.cpp.i
+.PHONY : 2d_track/lesson5_features.cpp.i
+
+2d_track/lesson5_features.s: 2d_track/lesson5_features.cpp.s
+.PHONY : 2d_track/lesson5_features.s
+
+# target to generate assembly for a file
+2d_track/lesson5_features.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cv_lab_2d.dir/build.make CMakeFiles/cv_lab_2d.dir/2d_track/lesson5_features.cpp.s
+.PHONY : 2d_track/lesson5_features.cpp.s
+
+2d_track/module.o: 2d_track/module.cpp.o
+.PHONY : 2d_track/module.o
+
+# target to build an object file
+2d_track/module.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cv_lab_2d.dir/build.make CMakeFiles/cv_lab_2d.dir/2d_track/module.cpp.o
+.PHONY : 2d_track/module.cpp.o
+
+2d_track/module.i: 2d_track/module.cpp.i
+.PHONY : 2d_track/module.i
+
+# target to preprocess a source file
+2d_track/module.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cv_lab_2d.dir/build.make CMakeFiles/cv_lab_2d.dir/2d_track/module.cpp.i
+.PHONY : 2d_track/module.cpp.i
+
+2d_track/module.s: 2d_track/module.cpp.s
+.PHONY : 2d_track/module.s
+
+# target to generate assembly for a file
+2d_track/module.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cv_lab_2d.dir/build.make CMakeFiles/cv_lab_2d.dir/2d_track/module.cpp.s
+.PHONY : 2d_track/module.cpp.s
+
+3d_track/module.o: 3d_track/module.cpp.o
+.PHONY : 3d_track/module.o
+
+# target to build an object file
+3d_track/module.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cv_lab_3d.dir/build.make CMakeFiles/cv_lab_3d.dir/3d_track/module.cpp.o
+.PHONY : 3d_track/module.cpp.o
+
+3d_track/module.i: 3d_track/module.cpp.i
+.PHONY : 3d_track/module.i
+
+# target to preprocess a source file
+3d_track/module.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cv_lab_3d.dir/build.make CMakeFiles/cv_lab_3d.dir/3d_track/module.cpp.i
+.PHONY : 3d_track/module.cpp.i
+
+3d_track/module.s: 3d_track/module.cpp.s
+.PHONY : 3d_track/module.s
+
+# target to generate assembly for a file
+3d_track/module.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cv_lab_3d.dir/build.make CMakeFiles/cv_lab_3d.dir/3d_track/module.cpp.s
+.PHONY : 3d_track/module.cpp.s
 
 # Help Target
 help:
@@ -233,19 +318,29 @@ help:
 	@echo "... depend"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
-	@echo "... cv_engine"
-	@echo "... lesson1.o"
-	@echo "... lesson1.i"
-	@echo "... lesson1.s"
-	@echo "... lesson2_filters.o"
-	@echo "... lesson2_filters.i"
-	@echo "... lesson2_filters.s"
-	@echo "... lesson3_edges.o"
-	@echo "... lesson3_edges.i"
-	@echo "... lesson3_edges.s"
-	@echo "... lesson4_contours.o"
-	@echo "... lesson4_contours.i"
-	@echo "... lesson4_contours.s"
+	@echo "... cv_lab_2d"
+	@echo "... cv_lab_3d"
+	@echo "... 2d_track/lesson1.o"
+	@echo "... 2d_track/lesson1.i"
+	@echo "... 2d_track/lesson1.s"
+	@echo "... 2d_track/lesson2_filters.o"
+	@echo "... 2d_track/lesson2_filters.i"
+	@echo "... 2d_track/lesson2_filters.s"
+	@echo "... 2d_track/lesson3_edges.o"
+	@echo "... 2d_track/lesson3_edges.i"
+	@echo "... 2d_track/lesson3_edges.s"
+	@echo "... 2d_track/lesson4_contours.o"
+	@echo "... 2d_track/lesson4_contours.i"
+	@echo "... 2d_track/lesson4_contours.s"
+	@echo "... 2d_track/lesson5_features.o"
+	@echo "... 2d_track/lesson5_features.i"
+	@echo "... 2d_track/lesson5_features.s"
+	@echo "... 2d_track/module.o"
+	@echo "... 2d_track/module.i"
+	@echo "... 2d_track/module.s"
+	@echo "... 3d_track/module.o"
+	@echo "... 3d_track/module.i"
+	@echo "... 3d_track/module.s"
 .PHONY : help
 
 

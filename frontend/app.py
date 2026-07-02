@@ -101,10 +101,17 @@ def main():
     output_path = os.path.join(DATA_DIR, "output", lesson["output_filename"])
     
     # UI Controls
-    payload = {
-        "input_filename": lesson["input_filename"],
-        "output_filename": lesson["output_filename"]
-    }
+    payload = {}
+    if lesson.get("id") != 5:
+        payload = {
+            "input_filename": lesson["input_filename"],
+            "output_filename": lesson.get("output_filename", "output.png")
+        }
+    else:
+        payload = {
+            "ref_filename": lesson["input_filename"],
+            "live_filename": lesson["output_filename"]
+        }
     
     if lesson.get("id", 1) == 1:
         threshold = st.slider("Select Threshold Value", 0, 255, lesson.get("default_threshold", 127))
@@ -133,6 +140,8 @@ def main():
     elif lesson.get("id") == 4:
         min_area = st.slider("Minimum Part Area (in pixels)", 10, 5000, lesson.get("default_min_area", 100))
         payload["min_area"] = float(min_area)
+    elif lesson.get("id") == 5:
+        st.info("Lesson 5 orchestrated via Temporal. Adjusting contrast automatically in Temporal if needed.")
     
     if lesson.get("id") == 3:
         st.subheader("Pipeline Visualizer")
@@ -251,6 +260,78 @@ def main():
                 st.success("✅ Target alignment calculated! Controller ready to execute grasp.")
             else:
                 st.info("No active telemetry. Click 'Trigger Camera' to scan.")
+    elif lesson.get("id") == 5:
+        col1, col2 = st.columns(2)
+        with col1:
+            st.subheader("Reference Image (Target)")
+            ref_path = os.path.join(DATA_DIR, "input", lesson["input_filename"])
+            if os.path.exists(ref_path):
+                img = Image.open(ref_path)
+                st.image(img, use_column_width=True)
+            else:
+                st.warning(f"Reference image not found at {ref_path}")
+        with col2:
+            st.subheader("Live Feed (Matched)")
+            live_path = os.path.join(DATA_DIR, "input", lesson["output_filename"])
+            if os.path.exists(live_path):
+                img = Image.open(live_path)
+                st.image(img, use_column_width=True)
+            else:
+                st.warning(f"Live image not found at {live_path}")
+                
+        st.markdown("---")
+        if st.button("Run Target Acquisition Workflow"):
+            with st.spinner("Running Feature Matching across Python & C++ bridge..."):
+                try:
+                    result, workflow_id = run_workflow(lesson["workflow_name"], payload)
+                    st.success("Workflow completed!")
+                    
+                    st.write(f"**Temporal Retries Used:** {result.get('retry_count', 0)}")
+                    st.write(f"**Inliers:** {result.get('inliers', 0)} | **Outliers:** {result.get('outliers', 0)}")
+                    
+                    if result.get("is_occluded", False):
+                        st.warning("⚠️ Target is occluded or not found in the live feed. (Graceful failure handled by Temporal)")
+                    elif result.get("success", False):
+                        st.success("✅ Target Acquired! Calculating Homography...")
+                        
+                        # Render matches side by side
+                        ref_img = Image.open(ref_path).convert("RGB")
+                        live_img = Image.open(live_path).convert("RGB")
+                        
+                        # Create a combined image
+                        total_width = ref_img.width + live_img.width
+                        max_height = max(ref_img.height, live_img.height)
+                        combined_img = Image.new('RGB', (total_width, max_height))
+                        combined_img.paste(ref_img, (0, 0))
+                        combined_img.paste(live_img, (ref_img.width, 0))
+                        
+                        draw = ImageDraw.Draw(combined_img)
+                        
+                        ref_kps = result.get("ref_keypoints", [])
+                        live_kps = result.get("live_keypoints", [])
+                        
+                        # Draw bounding box on live image
+                        bbox = result.get("bounding_box", [])
+                        if len(bbox) == 4:
+                            pts = [(pt["x"] + ref_img.width, pt["y"]) for pt in bbox]
+                            draw.polygon(pts, outline=(0, 255, 0), width=4)
+                        
+                        # Draw matching lines
+                        for m in result.get("matches", []):
+                            pt1 = ref_kps[m["queryIdx"]]
+                            pt2 = live_kps[m["trainIdx"]]
+                            
+                            x1, y1 = pt1["x"], pt1["y"]
+                            x2, y2 = pt2["x"] + ref_img.width, pt2["y"]
+                            
+                            draw.line((x1, y1, x2, y2), fill=(0, 255, 255, 128), width=1)
+                            draw.ellipse((x1-2, y1-2, x1+2, y1+2), fill=(255, 0, 0))
+                            draw.ellipse((x2-2, y2-2, x2+2, y2+2), fill=(255, 0, 0))
+                            
+                        st.image(combined_img, use_column_width=True)
+                except Exception as e:
+                    st.error(f"Workflow failed: {e}")
+                    
     else:
         col1, col2 = st.columns(2)
         
@@ -272,7 +353,7 @@ def main():
             else:
                 output_placeholder.info("Run the workflow to generate output.")
             
-    if lesson.get("id") != 4:
+    if lesson.get("id") not in [4, 5]:
         st.markdown("---")
         
         if st.button("Run Temporal Workflow"):

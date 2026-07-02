@@ -33,9 +33,21 @@ execute_process(
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
-add_library(cv_engine SHARED lesson1.cpp lesson2_filters.cpp lesson3_edges.cpp lesson4_contours.cpp)
-target_link_libraries(cv_engine ${OpenCV_LIBS})
+# Add 2D Track library
+add_library(cv_lab_2d SHARED 
+    2d_track/module.cpp 
+    2d_track/lesson1.cpp 
+    2d_track/lesson2_filters.cpp 
+    2d_track/lesson3_edges.cpp 
+    2d_track/lesson4_contours.cpp
+    2d_track/lesson5_features.cpp)
+target_link_libraries(cv_lab_2d ${OpenCV_LIBS})
+set_target_properties(cv_lab_2d PROPERTIES PREFIX "")
+set_target_properties(cv_lab_2d PROPERTIES SUFFIX "${PYTHON_EXT_SUFFIX}")
 
-# Set the output name with python extension suffix (e.g. .cpython-310-x86_64-linux-gnu.so)
-set_target_properties(cv_engine PROPERTIES PREFIX "")
-set_target_properties(cv_engine PROPERTIES SUFFIX "${PYTHON_EXT_SUFFIX}")
+# Add 3D Track library
+add_library(cv_lab_3d SHARED 
+    3d_track/module.cpp)
+target_link_libraries(cv_lab_3d ${OpenCV_LIBS})
+set_target_properties(cv_lab_3d PROPERTIES PREFIX "")
+set_target_properties(cv_lab_3d PROPERTIES SUFFIX "${PYTHON_EXT_SUFFIX}")
