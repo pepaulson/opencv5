@@ -122,4 +122,32 @@ async def process_lesson4_contours(params: dict) -> dict:
         "parts": parts_list
     }
 
+@activity.defn
+async def calibrate_camera(image_paths: list[str]) -> dict:
+    activity.logger.info(f"Calibrating camera with {len(image_paths)} images")
+    res = cv_lab_2d.run_lesson_6_calibrate(image_paths)
+    if res.success:
+        return {
+            "success": True,
+            "camera_matrix": res.camera_matrix,
+            "dist_coeffs": res.dist_coeffs
+        }
+    return {"success": False}
 
+@activity.defn
+async def estimate_pose(params: dict) -> dict:
+    image_path = params["image_path"]
+    camera_matrix = params["camera_matrix"]
+    dist_coeffs = params["dist_coeffs"]
+    
+    activity.logger.info(f"Estimating pose for {image_path}")
+    res = cv_lab_2d.run_lesson_6_pose(image_path, camera_matrix, dist_coeffs)
+    
+    if res.success:
+        return {
+            "success": True,
+            "rvec": res.rvec,
+            "tvec": res.tvec,
+            "axis_points": res.axis_points
+        }
+    return {"success": False}

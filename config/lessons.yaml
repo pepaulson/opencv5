@@ -66,3 +66,15 @@ lessons:
     workflow_name: "PartIdentificationWorkflow"
     input_filename: "ref_part.png"
     output_filename: "live_feed.png"
+
+  - id: 6
+    title: "Lesson 6: Fiducial Tracking & Camera Calibration"
+    narrative: |
+      **Mission 6: Spatial Awareness**
+      
+      Before a robot can interact with objects on a table, the vision system must remove the fisheye distortion from its wide-angle lens and establish a reliable world-coordinate origin (X=0, Y=0, Z=0) using a printed ArUco marker glued to the work surface.
+      
+      Your mission is to process a series of checkerboard images to generate the camera matrix and distortion coefficients. Then, detect an ArUco marker in a live feed to calculate the camera's rotational and translational vectors. Temporal will persist this calibration state even if the vision server reboots.
+    workflow_name: "CalibrationServiceWorkflow"
+    input_filename: "checkerboard_1.png"
+    output_filename: "aruco_scene.png"

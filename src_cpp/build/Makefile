@@ -262,6 +262,30 @@ cv_lab_3d/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/cv_lab_2d.dir/build.make CMakeFiles/cv_lab_2d.dir/2d_track/lesson5_features.cpp.s
 .PHONY : 2d_track/lesson5_features.cpp.s
 
+2d_track/lesson6_calibration.o: 2d_track/lesson6_calibration.cpp.o
+.PHONY : 2d_track/lesson6_calibration.o
+
+# target to build an object file
+2d_track/lesson6_calibration.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cv_lab_2d.dir/build.make CMakeFiles/cv_lab_2d.dir/2d_track/lesson6_calibration.cpp.o
+.PHONY : 2d_track/lesson6_calibration.cpp.o
+
+2d_track/lesson6_calibration.i: 2d_track/lesson6_calibration.cpp.i
+.PHONY : 2d_track/lesson6_calibration.i
+
+# target to preprocess a source file
+2d_track/lesson6_calibration.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cv_lab_2d.dir/build.make CMakeFiles/cv_lab_2d.dir/2d_track/lesson6_calibration.cpp.i
+.PHONY : 2d_track/lesson6_calibration.cpp.i
+
+2d_track/lesson6_calibration.s: 2d_track/lesson6_calibration.cpp.s
+.PHONY : 2d_track/lesson6_calibration.s
+
+# target to generate assembly for a file
+2d_track/lesson6_calibration.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cv_lab_2d.dir/build.make CMakeFiles/cv_lab_2d.dir/2d_track/lesson6_calibration.cpp.s
+.PHONY : 2d_track/lesson6_calibration.cpp.s
+
 2d_track/module.o: 2d_track/module.cpp.o
 .PHONY : 2d_track/module.o
 
@@ -335,6 +359,9 @@ help:
 	@echo "... 2d_track/lesson5_features.o"
 	@echo "... 2d_track/lesson5_features.i"
 	@echo "... 2d_track/lesson5_features.s"
+	@echo "... 2d_track/lesson6_calibration.o"
+	@echo "... 2d_track/lesson6_calibration.i"
+	@echo "... 2d_track/lesson6_calibration.s"
 	@echo "... 2d_track/module.o"
 	@echo "... 2d_track/module.i"
 	@echo "... 2d_track/module.s"

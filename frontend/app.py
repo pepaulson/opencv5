@@ -83,6 +83,47 @@ def call_temporal_func(func, *args, **kwargs):
         return await func(client, *args, **kwargs)
     return asyncio.run(_run())
 
+async def start_calibration_workflow_async(client):
+    workflow_id = "calibration-service-workflow-id"
+    try:
+        handle = client.get_workflow_handle(workflow_id)
+        desc = await handle.describe()
+        if desc.status == WorkflowExecutionStatus.RUNNING:
+            return "running"
+    except Exception:
+        pass
+        
+    await client.start_workflow(
+        "CalibrationServiceWorkflow",
+        id=workflow_id,
+        task_queue="cv-learning-tasks",
+    )
+    return "started"
+
+async def check_calibration_workflow_async(client):
+    workflow_id = "calibration-service-workflow-id"
+    try:
+        handle = client.get_workflow_handle(workflow_id)
+        desc = await handle.describe()
+        return desc.status == WorkflowExecutionStatus.RUNNING
+    except Exception:
+        return False
+
+async def submit_calibration_images_async(client, images):
+    workflow_id = "calibration-service-workflow-id"
+    handle = client.get_workflow_handle(workflow_id)
+    await handle.signal("SubmitCalibrationImages", images)
+
+async def get_calibration_status_async(client):
+    workflow_id = "calibration-service-workflow-id"
+    handle = client.get_workflow_handle(workflow_id)
+    return await handle.query("GetCalibrationStatus")
+
+async def get_pose_estimation_async(client, image_path):
+    workflow_id = "calibration-service-workflow-id"
+    handle = client.get_workflow_handle(workflow_id)
+    return await handle.execute_update("GetPoseEstimation", image_path)
+
 def main():
     st.title("OpenCV 5 & Temporal Learning Lab")
     
@@ -142,6 +183,8 @@ def main():
         payload["min_area"] = float(min_area)
     elif lesson.get("id") == 5:
         st.info("Lesson 5 orchestrated via Temporal. Adjusting contrast automatically in Temporal if needed.")
+    elif lesson.get("id") == 6:
+        st.info("Lesson 6 state persists via a long-running Temporal workflow.")
     
     if lesson.get("id") == 3:
         st.subheader("Pipeline Visualizer")
@@ -332,6 +375,79 @@ def main():
                 except Exception as e:
                     st.error(f"Workflow failed: {e}")
                     
+    elif lesson.get("id") == 6:
+        st.subheader("Calibration and Pose Dashboard")
+        is_running = call_temporal_func(check_calibration_workflow_async)
+        
+        status_col, control_col = st.columns([1, 2])
+        with status_col:
+            if is_running:
+                st.success("🔄 CALIBRATION SERVICE: ONLINE")
+            else:
+                st.error("🔄 CALIBRATION SERVICE: OFFLINE")
+                
+        with control_col:
+            if not is_running:
+                if st.button("Start Calibration Service Workflow", type="primary"):
+                    call_temporal_func(start_calibration_workflow_async)
+                    st.toast("Calibration service started!")
+                    st.rerun()
+
+        if is_running:
+            status = call_temporal_func(get_calibration_status_async)
+            is_calibrated = status.get("is_calibrated", False)
+            
+            if not is_calibrated:
+                st.warning("Camera is not calibrated. Submit 10 checkerboard images to begin.")
+                if st.button("Submit Calibration Images"):
+                    images = [f"/app/data/input/checkerboard_{i}.png" for i in range(1, 11)]
+                    call_temporal_func(submit_calibration_images_async, images)
+                    st.toast("Calibration images submitted!")
+                    st.rerun()
+            else:
+                st.success("✅ Camera Calibrated! Intrinsic matrix persisted in Temporal.")
+                
+                aruco_path = os.path.join(DATA_DIR, "input", lesson["output_filename"])
+                
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.subheader("Live Feed (ArUco Marker)")
+                    if os.path.exists(aruco_path):
+                        img = Image.open(aruco_path)
+                        st.image(img, use_column_width=True)
+                
+                with col2:
+                    st.subheader("Pose Estimation Overlay")
+                    if st.button("Estimate Pose & Draw 3D Axis"):
+                        with st.spinner("Calculating Extrinsics..."):
+                            try:
+                                pose = call_temporal_func(get_pose_estimation_async, aruco_path)
+                                if pose.get("success"):
+                                    img = Image.open(aruco_path).convert("RGB")
+                                    draw = ImageDraw.Draw(img)
+                                    
+                                    # Draw 3D Axis
+                                    axis_points = pose.get("axis_points", [])
+                                    if len(axis_points) == 4:
+                                        origin = (axis_points[0][0], axis_points[0][1])
+                                        x_pt = (axis_points[1][0], axis_points[1][1])
+                                        y_pt = (axis_points[2][0], axis_points[2][1])
+                                        z_pt = (axis_points[3][0], axis_points[3][1])
+                                        
+                                        # X Axis - Red
+                                        draw.line([origin, x_pt], fill=(255, 0, 0), width=3)
+                                        # Y Axis - Green
+                                        draw.line([origin, y_pt], fill=(0, 255, 0), width=3)
+                                        # Z Axis - Blue
+                                        draw.line([origin, z_pt], fill=(0, 0, 255), width=3)
+                                        
+                                    st.image(img, use_column_width=True)
+                                    st.write(f"**Rotational Vector (rvec):** {pose.get('rvec')}")
+                                    st.write(f"**Translational Vector (tvec):** {pose.get('tvec')}")
+                                else:
+                                    st.warning("Marker not found in the image or failed to estimate pose.")
+                            except Exception as e:
+                                st.error(f"Error querying Temporal: {e}")
     else:
         col1, col2 = st.columns(2)
         
@@ -353,7 +469,7 @@ def main():
             else:
                 output_placeholder.info("Run the workflow to generate output.")
             
-    if lesson.get("id") not in [4, 5]:
+    if lesson.get("id") not in [4, 5, 6]:
         st.markdown("---")
         
         if st.button("Run Temporal Workflow"):

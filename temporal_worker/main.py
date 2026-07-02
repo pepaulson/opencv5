@@ -5,7 +5,8 @@ from temporalio.worker import Worker
 from workflows.track_2d.activities import ingest_image, process_image, save_output, process_lesson2_image, process_grayscale, process_sobel, process_canny, process_lesson4_contours
 from workflows.track_2d.workflows import LessonOneWorkflow, VisionCalibrationWorkflow, PathfinderEdgeWorkflow, PartLocalizationWorkflow
 from workflows.track_2d.lesson5 import process_lesson5_features, PartIdentificationWorkflow
-
+from workflows.track_2d.lesson6 import CalibrationServiceWorkflow
+from workflows.track_2d.activities import calibrate_camera, estimate_pose
 async def main():
     temporal_host = os.getenv("TEMPORAL_HOST", "localhost:7233")
     print(f"Connecting to Temporal host: {temporal_host}")
@@ -14,8 +15,8 @@ async def main():
     worker = Worker(
         client,
         task_queue="cv-learning-tasks",
-        workflows=[LessonOneWorkflow, VisionCalibrationWorkflow, PathfinderEdgeWorkflow, PartLocalizationWorkflow, PartIdentificationWorkflow],
-        activities=[ingest_image, process_image, save_output, process_lesson2_image, process_grayscale, process_sobel, process_canny, process_lesson4_contours, process_lesson5_features],
+        workflows=[LessonOneWorkflow, VisionCalibrationWorkflow, PathfinderEdgeWorkflow, PartLocalizationWorkflow, PartIdentificationWorkflow, CalibrationServiceWorkflow],
+        activities=[ingest_image, process_image, save_output, process_lesson2_image, process_grayscale, process_sobel, process_canny, process_lesson4_contours, process_lesson5_features, calibrate_camera, estimate_pose],
     )
     
     print("Starting Temporal worker...")

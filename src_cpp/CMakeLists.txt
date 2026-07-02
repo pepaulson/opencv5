@@ -40,7 +40,8 @@ add_library(cv_lab_2d SHARED
     2d_track/lesson2_filters.cpp 
     2d_track/lesson3_edges.cpp 
     2d_track/lesson4_contours.cpp
-    2d_track/lesson5_features.cpp)
+    2d_track/lesson5_features.cpp
+    2d_track/lesson6_calibration.cpp)
 target_link_libraries(cv_lab_2d ${OpenCV_LIBS})
 set_target_properties(cv_lab_2d PROPERTIES PREFIX "")
 set_target_properties(cv_lab_2d PROPERTIES SUFFIX "${PYTHON_EXT_SUFFIX}")
