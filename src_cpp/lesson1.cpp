@@ -32,6 +32,7 @@ std::string run_lesson_1(const std::string& input_path, const std::string& outpu
 
 extern void init_lesson2_filters(py::module_ &m);
 extern void init_lesson3_edges(py::module_ &m);
+extern void init_lesson4_contours(py::module_ &m);
 
 PYBIND11_MODULE(cv_engine, m) {
     m.doc() = "OpenCV C++ core logic for Temporal Learning Lab"; // optional module docstring
@@ -40,4 +41,5 @@ PYBIND11_MODULE(cv_engine, m) {
           
     init_lesson2_filters(m);
     init_lesson3_edges(m);
+    init_lesson4_contours(m);
 }

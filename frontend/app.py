@@ -2,8 +2,8 @@ import streamlit as st
 import yaml
 import os
 import asyncio
-from temporalio.client import Client
-from PIL import Image
+from temporalio.client import Client, WorkflowExecutionStatus
+from PIL import Image, ImageDraw
 
 # Setup Streamlit page
 st.set_page_config(page_title="OpenCV 5 & Temporal Learning Lab", layout="wide")
@@ -33,6 +33,54 @@ def run_workflow(workflow_name, payload):
         )
         return result, workflow_id
     
+    return asyncio.run(_run())
+
+async def start_cell_workflow_async(client, payload):
+    workflow_id = "part-localization-workflow-id"
+    try:
+        handle = client.get_workflow_handle(workflow_id)
+        desc = await handle.describe()
+        if desc.status == WorkflowExecutionStatus.RUNNING:
+            return "running"
+    except Exception:
+        pass
+        
+    await client.start_workflow(
+        "PartLocalizationWorkflow",
+        payload,
+        id=workflow_id,
+        task_queue="cv-learning-tasks",
+    )
+    return "started"
+
+async def check_cell_running_async(client):
+    workflow_id = "part-localization-workflow-id"
+    try:
+        handle = client.get_workflow_handle(workflow_id)
+        desc = await handle.describe()
+        return desc.status == WorkflowExecutionStatus.RUNNING
+    except Exception:
+        return False
+
+async def trigger_camera_async(client):
+    workflow_id = "part-localization-workflow-id"
+    handle = client.get_workflow_handle(workflow_id)
+    await handle.signal("CameraTrigger")
+
+async def stop_cell_async(client):
+    workflow_id = "part-localization-workflow-id"
+    handle = client.get_workflow_handle(workflow_id)
+    await handle.signal("ExitCell")
+
+async def query_coordinates_async(client):
+    workflow_id = "part-localization-workflow-id"
+    handle = client.get_workflow_handle(workflow_id)
+    return await handle.query("GetLatestCoordinates")
+
+def call_temporal_func(func, *args, **kwargs):
+    async def _run():
+        client = await Client.connect(TEMPORAL_HOST)
+        return await func(client, *args, **kwargs)
     return asyncio.run(_run())
 
 def main():
@@ -82,6 +130,9 @@ def main():
         payload["kernel_size"] = kernel_size
         payload["threshold1"] = threshold1
         payload["threshold2"] = threshold2
+    elif lesson.get("id") == 4:
+        min_area = st.slider("Minimum Part Area (in pixels)", 10, 5000, lesson.get("default_min_area", 100))
+        payload["min_area"] = float(min_area)
     
     if lesson.get("id") == 3:
         st.subheader("Pipeline Visualizer")
@@ -117,6 +168,89 @@ def main():
                 
         show_artifact()
         
+    elif lesson.get("id") == 4:
+        st.subheader("Robot Cell Active Status")
+        is_running = call_temporal_func(check_cell_running_async)
+        
+        status_col, control_col = st.columns([1, 2])
+        with status_col:
+            if is_running:
+                st.success("🤖 ROBOT CELL: ONLINE")
+            else:
+                st.error("🤖 ROBOT CELL: OFFLINE")
+                
+        with control_col:
+            if not is_running:
+                if st.button("Start Robot Cell Workflow", type="primary"):
+                    call_temporal_func(start_cell_workflow_async, payload)
+                    st.toast("Robot cell workflow started!")
+                    st.rerun()
+            else:
+                c1, c2 = st.columns(2)
+                with c1:
+                    if st.button("📸 Trigger Camera (PLC Signal)", type="primary", use_container_width=True):
+                        call_temporal_func(trigger_camera_async)
+                        st.toast("CameraTrigger signal sent!")
+                        st.rerun()
+                with c2:
+                    if st.button("🛑 Stop Robot Cell", use_container_width=True):
+                        call_temporal_func(stop_cell_async)
+                        st.toast("ExitCell signal sent.")
+                        st.rerun()
+
+        # Check for queryable coordinates
+        latest_coords = []
+        if is_running:
+            try:
+                latest_coords = call_temporal_func(query_coordinates_async)
+            except Exception as e:
+                st.warning("Waiting for camera trigger signal...")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            st.subheader("Vision Sensor Feed")
+            if os.path.exists(input_path):
+                img = Image.open(input_path).convert("RGB")
+                if latest_coords:
+                    draw = ImageDraw.Draw(img)
+                    for idx, part in enumerate(latest_coords):
+                        cx, cy = part["x"], part["y"]
+                        
+                        # Draw crosshair
+                        r = 15
+                        draw.line((cx - r, cy, cx + r, cy), fill=(0, 255, 0), width=2)
+                        draw.line((cx, cy - r, cx, cy + r), fill=(0, 255, 0), width=2)
+                        draw.ellipse((cx - 3, cy - 3, cx + 3, cy + 3), fill=(255, 0, 0))
+                        
+                        # Draw Rotated Bounding Box
+                        bbox = part["bounding_box"]
+                        pts = [(pt["x"], pt["y"]) for pt in bbox]
+                        draw.polygon(pts, outline=(255, 0, 0), width=3)
+                        
+                        # ID Label
+                        draw.text((cx + 15, cy - 15), f"ID: {idx+1}", fill=(255, 255, 0))
+                st.image(img, use_column_width=True)
+            else:
+                st.warning(f"Conveyor image not found at {input_path}")
+                
+        with col2:
+            st.subheader("Robot Gripper Telemetry")
+            if latest_coords:
+                import pandas as pd
+                telemetry_data = []
+                for idx, part in enumerate(latest_coords):
+                    telemetry_data.append({
+                        "Part ID": f"Part_{idx+1}",
+                        "Centroid X": round(part["x"], 2),
+                        "Centroid Y": round(part["y"], 2),
+                        "Gripper Angle (°)": round(part["angle"], 2),
+                        "Area (px²)": round(part["area"], 2)
+                    })
+                df = pd.DataFrame(telemetry_data)
+                st.dataframe(df, use_container_width=True, hide_index=True)
+                st.success("✅ Target alignment calculated! Controller ready to execute grasp.")
+            else:
+                st.info("No active telemetry. Click 'Trigger Camera' to scan.")
     else:
         col1, col2 = st.columns(2)
         
@@ -138,39 +272,40 @@ def main():
             else:
                 output_placeholder.info("Run the workflow to generate output.")
             
-    st.markdown("---")
-    
-    if st.button("Run Temporal Workflow"):
-        if not os.path.exists(input_path):
-            st.error("Cannot run workflow: Input image is missing.")
-            return
-            
-        with st.spinner("Executing Workflow across Python & C++ bridge..."):
-            try:
-                result, workflow_id = run_workflow(lesson["workflow_name"], payload)
-                st.success("Workflow completed successfully!")
+    if lesson.get("id") != 4:
+        st.markdown("---")
+        
+        if st.button("Run Temporal Workflow"):
+            if not os.path.exists(input_path):
+                st.error("Cannot run workflow: Input image is missing.")
+                return
                 
-                # Update output path if workflow returned it
-                if isinstance(result, dict) and "output_path" in result:
-                    output_path = result["output_path"]
-                
-                # Update output image
-                if lesson.get("id") == 3:
-                    show_artifact()
-                else:
-                    if os.path.exists(output_path):
-                        # Force image reload by appending a query param or just re-opening
-                        img = Image.open(output_path)
-                        output_placeholder.image(img, use_column_width=True)
+            with st.spinner("Executing Workflow across Python & C++ bridge..."):
+                try:
+                    result, workflow_id = run_workflow(lesson["workflow_name"], payload)
+                    st.success("Workflow completed successfully!")
                     
-                if isinstance(result, dict) and "sweep_results" in result:
-                    st.subheader("Performance Profiling (C++ Execution)")
-                    for res in result["sweep_results"]:
-                        st.write(f"Kernel Size: {res['kernel_size']}x{res['kernel_size']} | Filter: {res['filter_type']} | Time: **{res['execution_time_ms']:.2f} ms**")
+                    # Update output path if workflow returned it
+                    if isinstance(result, dict) and "output_path" in result:
+                        output_path = result["output_path"]
                     
-                st.info(f"Deep Dive: [View Workflow History in Temporal UI](http://localhost:8080/namespaces/default/workflows/{workflow_id})")
-            except Exception as e:
-                st.error(f"Workflow failed: {e}")
+                    # Update output image
+                    if lesson.get("id") == 3:
+                        show_artifact()
+                    else:
+                        if os.path.exists(output_path):
+                            # Force image reload by appending a query param or just re-opening
+                            img = Image.open(output_path)
+                            output_placeholder.image(img, use_column_width=True)
+                        
+                    if isinstance(result, dict) and "sweep_results" in result:
+                        st.subheader("Performance Profiling (C++ Execution)")
+                        for res in result["sweep_results"]:
+                            st.write(f"Kernel Size: {res['kernel_size']}x{res['kernel_size']} | Filter: {res['filter_type']} | Time: **{res['execution_time_ms']:.2f} ms**")
+                        
+                    st.info(f"Deep Dive: [View Workflow History in Temporal UI](http://localhost:8080/namespaces/default/workflows/{workflow_id})")
+                except Exception as e:
+                    st.error(f"Workflow failed: {e}")
 
 if __name__ == "__main__":
     main()

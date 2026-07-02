@@ -85,3 +85,41 @@ async def process_canny(params: dict) -> dict:
     result_path = cv_engine.run_lesson_3_canny(input_path, output_path, t1, t2)
     return {"output_path": result_path}
 
+@activity.defn
+async def process_lesson4_contours(params: dict) -> dict:
+    input_path = params["input_path"]
+    min_area = params.get("min_area", 100.0)
+    
+    activity.logger.info(f"Extracting contours from {input_path} with min_area {min_area}")
+    
+    # Call the C++ pybind11 module
+    res = cv_engine.run_lesson_4_contours(input_path, min_area)
+    
+    # Convert C++ object hierarchy to native Python lists/dicts for JSON serialization
+    contours_list = []
+    for contour in res.contours:
+        contour_points = []
+        for pt in contour:
+            contour_points.append({"x": pt.x, "y": pt.y})
+        contours_list.append(contour_points)
+
+    parts_list = []
+    for part in res.parts:
+        bbox_points = []
+        for pt in part.bounding_box:
+            bbox_points.append({"x": pt[0], "y": pt[1]})
+        parts_list.append({
+            "x": part.x,
+            "y": part.y,
+            "angle": part.angle,
+            "area": part.area,
+            "bounding_box": bbox_points
+        })
+
+    return {
+        "status": "success",
+        "contours": contours_list,
+        "parts": parts_list
+    }
+
+

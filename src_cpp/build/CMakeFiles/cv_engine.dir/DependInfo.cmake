@@ -11,6 +11,7 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/app/src_cpp/lesson1.cpp" "CMakeFiles/cv_engine.dir/lesson1.cpp.o" "gcc" "CMakeFiles/cv_engine.dir/lesson1.cpp.o.d"
   "/app/src_cpp/lesson2_filters.cpp" "CMakeFiles/cv_engine.dir/lesson2_filters.cpp.o" "gcc" "CMakeFiles/cv_engine.dir/lesson2_filters.cpp.o.d"
   "/app/src_cpp/lesson3_edges.cpp" "CMakeFiles/cv_engine.dir/lesson3_edges.cpp.o" "gcc" "CMakeFiles/cv_engine.dir/lesson3_edges.cpp.o.d"
+  "/app/src_cpp/lesson4_contours.cpp" "CMakeFiles/cv_engine.dir/lesson4_contours.cpp.o" "gcc" "CMakeFiles/cv_engine.dir/lesson4_contours.cpp.o.d"
   )
 
 # Targets to which this target links which contain Fortran sources.

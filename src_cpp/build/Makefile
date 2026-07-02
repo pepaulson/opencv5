@@ -201,6 +201,30 @@ lesson3_edges.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/cv_engine.dir/build.make CMakeFiles/cv_engine.dir/lesson3_edges.cpp.s
 .PHONY : lesson3_edges.cpp.s
 
+lesson4_contours.o: lesson4_contours.cpp.o
+.PHONY : lesson4_contours.o
+
+# target to build an object file
+lesson4_contours.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cv_engine.dir/build.make CMakeFiles/cv_engine.dir/lesson4_contours.cpp.o
+.PHONY : lesson4_contours.cpp.o
+
+lesson4_contours.i: lesson4_contours.cpp.i
+.PHONY : lesson4_contours.i
+
+# target to preprocess a source file
+lesson4_contours.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cv_engine.dir/build.make CMakeFiles/cv_engine.dir/lesson4_contours.cpp.i
+.PHONY : lesson4_contours.cpp.i
+
+lesson4_contours.s: lesson4_contours.cpp.s
+.PHONY : lesson4_contours.s
+
+# target to generate assembly for a file
+lesson4_contours.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/cv_engine.dir/build.make CMakeFiles/cv_engine.dir/lesson4_contours.cpp.s
+.PHONY : lesson4_contours.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -219,6 +243,9 @@ help:
 	@echo "... lesson3_edges.o"
 	@echo "... lesson3_edges.i"
 	@echo "... lesson3_edges.s"
+	@echo "... lesson4_contours.o"
+	@echo "... lesson4_contours.i"
+	@echo "... lesson4_contours.s"
 .PHONY : help
 
 

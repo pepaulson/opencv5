@@ -1,7 +1,7 @@
 from datetime import timedelta
 from temporalio import workflow
 with workflow.unsafe.imports_passed_through():
-    from activities import ingest_image, process_image, save_output, process_lesson2_image, process_grayscale, process_sobel, process_canny
+    from activities import ingest_image, process_image, save_output, process_lesson2_image, process_grayscale, process_sobel, process_canny, process_lesson4_contours
 
 @workflow.defn
 class LessonOneWorkflow:
@@ -147,3 +147,57 @@ class PathfinderEdgeWorkflow:
             "sobel_path": sobel_res["output_path"],
             "canny_path": canny_res["output_path"]
         }
+
+@workflow.defn
+class PartLocalizationWorkflow:
+    def __init__(self) -> None:
+        self._trigger_received = False
+        self._latest_coordinates = []
+        self._is_exit = False
+
+    @workflow.signal(name="CameraTrigger")
+    def camera_trigger(self) -> None:
+        self._trigger_received = True
+
+    @workflow.signal(name="ExitCell")
+    def exit_cell(self) -> None:
+        self._is_exit = True
+
+    @workflow.query(name="GetLatestCoordinates")
+    def get_latest_coordinates(self) -> list:
+        return self._latest_coordinates
+
+    @workflow.run
+    async def run(self, payload: dict) -> None:
+        input_filename = payload.get("input_filename", "conveyor_parts.png")
+        min_area = payload.get("min_area", 100.0)
+
+        # 1. Ingest image
+        input_path = await workflow.execute_activity(
+            ingest_image,
+            input_filename,
+            start_to_close_timeout=timedelta(seconds=10),
+        )
+
+        while not self._is_exit:
+            # Wait continuously for CameraTrigger or ExitCell signals
+            await workflow.wait_condition(lambda: self._trigger_received or self._is_exit)
+
+            if self._is_exit:
+                break
+
+            self._trigger_received = False
+
+            # Execute C++ contour extraction Activity
+            activity_params = {
+                "input_path": input_path,
+                "min_area": min_area
+            }
+            coordinates = await workflow.execute_activity(
+                process_lesson4_contours,
+                activity_params,
+                start_to_close_timeout=timedelta(seconds=30),
+            )
+
+            # Store the computed spatial coordinates
+            self._latest_coordinates = coordinates.get("parts", [])

@@ -41,3 +41,16 @@ lessons:
     default_kernel_size: 5
     default_threshold1: 100
     default_threshold2: 200
+
+  - id: 4
+    title: "Lesson 4: The Pick-and-Place Coordinate"
+    narrative: |
+      **Mission 4: End-Effector Alignment**
+      
+      A robotic arm cell on a high-speed assembly line needs to grasp custom-machined parts as they arrive on a conveyor belt. The overhead vision sensor is capturing frames, but the robot controller needs exact $X, Y$ coordinates and the part's orientation angle to align its gripper.
+      
+      Your mission is to build a pipeline that takes a pre-processed image, identifies the distinct boundaries of the parts using contour algorithms, calculates their center of mass (moments), and retrieves these coordinates dynamically using Temporal Signals and Queries.
+    workflow_name: "PartLocalizationWorkflow"
+    input_filename: "conveyor_parts.png"
+    output_filename: "conveyor_parts.png"
+    default_min_area: 100
