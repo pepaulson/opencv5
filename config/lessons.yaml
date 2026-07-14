@@ -78,3 +78,18 @@ lessons:
     workflow_name: "CalibrationServiceWorkflow"
     input_filename: "checkerboard_1.png"
     output_filename: "aruco_scene.png"
+
+  - id: 7
+    title: "Lesson 7: The Depth Map"
+    narrative: |
+      **Mission 7: Spatial Workspace Mapping**
+      
+      A depth sensor is mounted above a manufacturing cell. To ensure a robotic arm doesn't collide with unstructured obstacles, the system must generate a 3D point cloud of the environment.
+      
+      Your mission is to take an aligned RGB image and its corresponding 16-bit Depth image, and use the camera's intrinsic parameters to reproject the 2D pixels and depth into a 3D spatial coordinate system.
+      
+      **Temporal Integration: The Claim Check Pattern**
+      Passing massive arrays (millions of X, Y, Z coordinates) through Temporal's event history will exceed payload limits. This workflow introduces the "Claim Check" pattern: Temporal orchestrates the C++ activity, but the C++ activity writes the resulting point cloud to a shared Docker volume and returns only the file path (metadata) to Temporal.
+    workflow_name: "PointCloudGenerationWorkflow"
+    input_filename: "rgb_scene.png"
+    output_filename: "lesson7_output.ply"

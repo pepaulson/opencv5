@@ -1,4 +1,0 @@
-/app/src_cpp/build/CMakeFiles/cv_lab_2d.dir
-/app/src_cpp/build/CMakeFiles/cv_lab_3d.dir
-/app/src_cpp/build/CMakeFiles/edit_cache.dir
-/app/src_cpp/build/CMakeFiles/rebuild_cache.dir

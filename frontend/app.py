@@ -4,7 +4,7 @@ import os
 import asyncio
 from temporalio.client import Client, WorkflowExecutionStatus
 from PIL import Image, ImageDraw
-
+import streamlit.components.v1 as components
 # Setup Streamlit page
 st.set_page_config(page_title="OpenCV 5 & Temporal Learning Lab", layout="wide")
 
@@ -143,12 +143,12 @@ def main():
     
     # UI Controls
     payload = {}
-    if lesson.get("id") != 5:
+    if lesson.get("id") not in [5, 7]:
         payload = {
             "input_filename": lesson["input_filename"],
             "output_filename": lesson.get("output_filename", "output.png")
         }
-    else:
+    elif lesson.get("id") == 5:
         payload = {
             "ref_filename": lesson["input_filename"],
             "live_filename": lesson["output_filename"]
@@ -185,6 +185,25 @@ def main():
         st.info("Lesson 5 orchestrated via Temporal. Adjusting contrast automatically in Temporal if needed.")
     elif lesson.get("id") == 6:
         st.info("Lesson 6 state persists via a long-running Temporal workflow.")
+    elif lesson.get("id") == 7:
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            fx = st.slider("Focal Length X (fx)", 100.0, 1000.0, 500.0)
+            fy = st.slider("Focal Length Y (fy)", 100.0, 1000.0, 500.0)
+        with col2:
+            cx = st.slider("Principal Point X (cx)", 0.0, 640.0, 320.0)
+            cy = st.slider("Principal Point Y (cy)", 0.0, 480.0, 240.0)
+        with col3:
+            scale = st.slider("Depth Scale", 10.0, 2000.0, 1000.0)
+        
+        payload["rgb_filename"] = "rgb_scene.png"
+        payload["depth_filename"] = "depth_scene.png"
+        payload["output_filename"] = lesson["output_filename"]
+        payload["fx"] = fx
+        payload["fy"] = fy
+        payload["cx"] = cx
+        payload["cy"] = cy
+        payload["scale"] = scale
     
     if lesson.get("id") == 3:
         st.subheader("Pipeline Visualizer")
@@ -448,6 +467,30 @@ def main():
                                     st.warning("Marker not found in the image or failed to estimate pose.")
                             except Exception as e:
                                 st.error(f"Error querying Temporal: {e}")
+    elif lesson.get("id") == 7:
+        col1, col2 = st.columns(2)
+        with col1:
+            st.subheader("RGB Image")
+            rgb_path = os.path.join(DATA_DIR, "input", "rgb_scene.png")
+            if os.path.exists(rgb_path):
+                st.image(Image.open(rgb_path), use_column_width=True)
+            else:
+                st.warning(f"RGB image not found at {rgb_path}")
+                
+        with col2:
+            st.subheader("Depth Map (Visualized)")
+            depth_path = os.path.join(DATA_DIR, "input", "depth_scene.png")
+            if os.path.exists(depth_path):
+                # Normalize 16-bit depth for display
+                import cv2
+                import numpy as np
+                depth_img = cv2.imread(depth_path, cv2.IMREAD_ANYDEPTH)
+                if depth_img is not None:
+                    depth_display = cv2.normalize(depth_img, None, 0, 255, cv2.NORM_MINMAX, dtype=cv2.CV_8U)
+                    depth_colored = cv2.applyColorMap(depth_display, cv2.COLORMAP_JET)
+                    st.image(depth_colored, channels="BGR", use_column_width=True)
+            else:
+                st.warning(f"Depth image not found at {depth_path}")
     else:
         col1, col2 = st.columns(2)
         
@@ -489,6 +532,84 @@ def main():
                     # Update output image
                     if lesson.get("id") == 3:
                         show_artifact()
+                    elif lesson.get("id") == 7:
+                        # Render the PLY using Three.js
+                        if os.path.exists(output_path):
+                            with open(output_path, "r") as f:
+                                ply_data = f.read()
+                            
+                            html_code = f"""
+                            <!DOCTYPE html>
+                            <html>
+                            <head>
+                                <meta charset="utf-8">
+                                <title>3D Point Cloud Viewer</title>
+                                <style>
+                                    body {{ margin: 0; overflow: hidden; background-color: #1e1e1e; }}
+                                    canvas {{ display: block; width: 100vw; height: 100vh; }}
+                                </style>
+                                <!-- Import Three.js and PLYLoader -->
+                                <script type="importmap">
+                                  {{
+                                    "imports": {{
+                                      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                                      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+                                    }}
+                                  }}
+                                </script>
+                            </head>
+                            <body>
+                                <script type="module">
+                                    import * as THREE from 'three';
+                                    import {{ PLYLoader }} from 'three/addons/loaders/PLYLoader.js';
+                                    import {{ OrbitControls }} from 'three/addons/controls/OrbitControls.js';
+
+                                    const scene = new THREE.Scene();
+                                    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                                    const renderer = new THREE.WebGLRenderer();
+                                    renderer.setSize(window.innerWidth, window.innerHeight);
+                                    document.body.appendChild(renderer.domElement);
+
+                                    const controls = new OrbitControls(camera, renderer.domElement);
+                                    
+                                    // Raw PLY data injected from Python
+                                    const plyString = `{ply_data}`;
+                                    
+                                    const loader = new PLYLoader();
+                                    // Parse the string data
+                                    const geometry = loader.parse(new TextEncoder().encode(plyString).buffer);
+                                    
+                                    geometry.computeVertexNormals();
+                                    const material = new THREE.PointsMaterial({{ size: 0.05, vertexColors: true }});
+                                    const points = new THREE.Points(geometry, material);
+                                    
+                                    // Center the geometry
+                                    geometry.computeBoundingBox();
+                                    const center = new THREE.Vector3();
+                                    geometry.boundingBox.getCenter(center);
+                                    points.position.sub(center);
+                                    
+                                    scene.add(points);
+                                    
+                                    camera.position.z = 2;
+                                    
+                                    function animate() {{
+                                        requestAnimationFrame(animate);
+                                        controls.update();
+                                        renderer.render(scene, camera);
+                                    }}
+                                    animate();
+                                </script>
+                            </body>
+                            </html>
+                            """
+                            st.subheader("3D Workspace Viewer")
+                            components.html(html_code, height=500)
+                            
+                            # Show the claim check payload
+                            st.subheader("Temporal Claim Check Payload")
+                            st.json(result)
+                            
                     else:
                         if os.path.exists(output_path):
                             # Force image reload by appending a query param or just re-opening
