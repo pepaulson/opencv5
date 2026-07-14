@@ -93,3 +93,20 @@ lessons:
     workflow_name: "PointCloudGenerationWorkflow"
     input_filename: "rgb_scene.png"
     output_filename: "lesson7_output.ply"
+
+  - id: 8
+    title: "Lesson 8: 3D Surface Normals & Mesh Alignment"
+    narrative: |
+      **Mission 8: Unstructured Bin Picking**
+      
+      A robot equipped with a vacuum gripper needs to pick up sheet metal components dumped randomly in a bin. To get a successful suction seal, the end-effector must align perfectly perpendicular to the flat surface of the topmost part.
+      
+      Your mission is to process a raw point cloud. Calculate the surface normals for the points, then use the RANSAC algorithm to fit a plane equation to the largest flat surface in the bin, determining the exact approach vector for the robot.
+      
+      **Temporal Integration: Simulating Physical Chaos**
+      The Temporal workflow will evaluate the RANSAC inlier confidence. If the score is too low (meaning no clear flat surface is exposed), it will trigger a physical "Bin Shake" (simulated via an asynchronous delay) and retry the vision analysis until a graspable surface is found.
+    workflow_name: "GraspVectorWorkflow"
+    input_filename: "lesson8_sample.ply"
+    output_filename: "lesson8_output.ply"
+    default_confidence_threshold: 40.0
+    default_distance_threshold: 0.02

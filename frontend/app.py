@@ -205,6 +205,16 @@ def main():
         payload["cy"] = cy
         payload["scale"] = scale
     
+    elif lesson.get("id") == 8:
+        col1, col2 = st.columns(2)
+        with col1:
+            confidence_threshold = st.slider("Confidence Threshold (%)", 0.0, 100.0, float(lesson.get("default_confidence_threshold", 40.0)))
+        with col2:
+            distance_threshold = st.slider("RANSAC Distance Threshold (m)", 0.001, 0.100, float(lesson.get("default_distance_threshold", 0.02)), step=0.001, format="%.3f")
+            
+        payload["confidence_threshold"] = confidence_threshold
+        payload["distance_threshold"] = distance_threshold
+    
     if lesson.get("id") == 3:
         st.subheader("Pipeline Visualizer")
         
@@ -491,6 +501,70 @@ def main():
                     st.image(depth_colored, channels="BGR", use_column_width=True)
             else:
                 st.warning(f"Depth image not found at {depth_path}")
+    elif lesson.get("id") == 8:
+        st.subheader("Input Point Cloud (Unstructured Bin)")
+        if os.path.exists(input_path):
+            with open(input_path, "r") as f:
+                input_ply_data = f.read()
+            html_code = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="utf-8">
+                <style>
+                    body {{ margin: 0; overflow: hidden; background-color: #1e1e1e; }}
+                    canvas {{ display: block; width: 100vw; height: 100vh; }}
+                </style>
+                <script type="importmap">
+                  {{
+                    "imports": {{
+                      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+                    }}
+                  }}
+                </script>
+            </head>
+            <body>
+                <script type="module">
+                    import * as THREE from 'three';
+                    import {{ PLYLoader }} from 'three/addons/loaders/PLYLoader.js';
+                    import {{ OrbitControls }} from 'three/addons/controls/OrbitControls.js';
+
+                    const scene = new THREE.Scene();
+                    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                    const renderer = new THREE.WebGLRenderer();
+                    renderer.setSize(window.innerWidth, window.innerHeight);
+                    document.body.appendChild(renderer.domElement);
+
+                    const controls = new OrbitControls(camera, renderer.domElement);
+                    const plyString = `{input_ply_data}`;
+                    const loader = new PLYLoader();
+                    const geometry = loader.parse(new TextEncoder().encode(plyString).buffer);
+                    geometry.computeVertexNormals();
+                    const material = new THREE.PointsMaterial({{ size: 0.05, vertexColors: true }});
+                    const points = new THREE.Points(geometry, material);
+                    
+                    geometry.computeBoundingBox();
+                    const center = new THREE.Vector3();
+                    geometry.boundingBox.getCenter(center);
+                    points.position.sub(center);
+                    
+                    scene.add(points);
+                    camera.position.z = 2;
+                    
+                    function animate() {{
+                        requestAnimationFrame(animate);
+                        controls.update();
+                        renderer.render(scene, camera);
+                    }}
+                    animate();
+                </script>
+            </body>
+            </html>
+            """
+            components.html(html_code, height=400)
+        else:
+            st.warning(f"Input point cloud not found at {input_path}")
     else:
         col1, col2 = st.columns(2)
         
@@ -532,11 +606,31 @@ def main():
                     # Update output image
                     if lesson.get("id") == 3:
                         show_artifact()
-                    elif lesson.get("id") == 7:
+                    elif lesson.get("id") in [7, 8]:
                         # Render the PLY using Three.js
                         if os.path.exists(output_path):
                             with open(output_path, "r") as f:
                                 ply_data = f.read()
+                            
+                            arrow_code = ""
+                            if lesson.get("id") == 8 and isinstance(result, dict) and result.get("success"):
+                                nx = result.get("nx", 0)
+                                ny = result.get("ny", 0)
+                                nz = result.get("nz", 0)
+                                cx = result.get("cx", 0)
+                                cy = result.get("cy", 0)
+                                cz = result.get("cz", 0)
+                                arrow_code = f"""
+                                    const dir = new THREE.Vector3({nx}, {ny}, {nz});
+                                    const originArrow = new THREE.Vector3({cx}, {cy}, {cz});
+                                    dir.normalize();
+                                    originArrow.sub(center); // Shift arrow to match shifted point cloud
+                                    const length = 0.5;
+                                    const hex = 0xffff00;
+                                    const arrowHelper = new THREE.ArrowHelper(dir, originArrow, length, hex, 0.1, 0.1);
+                                    
+                                    scene.add(arrowHelper);
+                                """
                             
                             html_code = f"""
                             <!DOCTYPE html>
@@ -591,6 +685,8 @@ def main():
                                     
                                     scene.add(points);
                                     
+                                    {arrow_code}
+                                    
                                     camera.position.z = 2;
                                     
                                     function animate() {{
@@ -607,7 +703,7 @@ def main():
                             components.html(html_code, height=500)
                             
                             # Show the claim check payload
-                            st.subheader("Temporal Claim Check Payload")
+                            st.subheader("Temporal Output Payload")
                             st.json(result)
                             
                     else:
