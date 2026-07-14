@@ -10,6 +10,7 @@ make -j$(nproc)
 echo "Copying cv_lab modules to python worker path..."
 cp cv_lab_2d*.so /app/temporal_worker/
 cp cv_lab_3d*.so /app/temporal_worker/
+cp cv_lab_integration*.so /app/temporal_worker/
 
 echo "Starting Temporal Worker..."
 cd /app/temporal_worker

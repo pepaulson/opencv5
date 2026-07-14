@@ -110,3 +110,19 @@ lessons:
     output_filename: "lesson8_output.ply"
     default_confidence_threshold: 40.0
     default_distance_threshold: 0.02
+
+  - id: 9
+    title: "Lesson 9: Sensor Fusion for Automated Harvesting"
+    narrative: |
+      **Mission 9: Automated Indoor Harvesting**
+      
+      A robotic gantry system operating in a dense indoor agricultural environment needs to prune specific leaves and harvest ripe produce.
+      
+      Your mission is to process an aligned RGB-D frame pair. First, use 2D HSV color space filtering and contour detection to isolate the target plant structures in the RGB image. Second, use the bounding boxes from the 2D detection to define a Region of Interest (ROI) in the 16-bit Depth image. Calculate the spatial median of the point cloud within that ROI to generate a reliable $X, Y, Z$ target coordinate for the robotic shears.
+      
+      **Temporal Integration: The Saga Pattern**
+      If the final communication step to the PLC fails due to a network timeout, Temporal must retry only the communication step, proving that it does not waste compute cycles rerunning the expensive 2D and 3D computer vision algorithms.
+    workflow_name: "AutomatedHarvestWorkflow"
+    input_filename: "lesson9_rgb.png"
+    output_filename: "lesson9_depth.png"
+

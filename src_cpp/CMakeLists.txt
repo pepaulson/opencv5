@@ -54,3 +54,11 @@ add_library(cv_lab_3d SHARED
 target_link_libraries(cv_lab_3d ${OpenCV_LIBS})
 set_target_properties(cv_lab_3d PROPERTIES PREFIX "")
 set_target_properties(cv_lab_3d PROPERTIES SUFFIX "${PYTHON_EXT_SUFFIX}")
+
+# Add Integration Track library
+add_library(cv_lab_integration SHARED 
+    integration/module.cpp
+    integration/lesson9_sensor_fusion.cpp)
+target_link_libraries(cv_lab_integration ${OpenCV_LIBS})
+set_target_properties(cv_lab_integration PROPERTIES PREFIX "")
+set_target_properties(cv_lab_integration PROPERTIES SUFFIX "${PYTHON_EXT_SUFFIX}")

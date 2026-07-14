@@ -214,6 +214,15 @@ def main():
             
         payload["confidence_threshold"] = confidence_threshold
         payload["distance_threshold"] = distance_threshold
+        
+    elif lesson.get("id") == 9:
+        st.info("Lesson 9 integrates 2D track (color segmentation) and 3D track (depth reprojection).")
+        simulate_failure = st.checkbox("Simulate Network Timeout to PLC (Saga Pattern)", value=True)
+        payload["simulate_failure"] = simulate_failure
+        payload["rgb_image_path"] = os.path.join(DATA_DIR, "input", "lesson9_rgb.png")
+        payload["depth_image_path"] = os.path.join(DATA_DIR, "input", "lesson9_depth.png")
+        payload["hsv_lower"] = [0, 100, 100]
+        payload["hsv_upper"] = [20, 255, 255]
     
     if lesson.get("id") == 3:
         st.subheader("Pipeline Visualizer")
@@ -243,7 +252,7 @@ def main():
             p = paths[selected_step]
             if os.path.exists(p):
                 img = Image.open(p)
-                output_placeholder.image(img, use_column_width=True)
+                output_placeholder.image(img, use_container_width=True)
             else:
                 output_placeholder.info(f"Artifact for {selected_step} not available. Run the workflow.")
                 
@@ -310,7 +319,7 @@ def main():
                         
                         # ID Label
                         draw.text((cx + 15, cy - 15), f"ID: {idx+1}", fill=(255, 255, 0))
-                st.image(img, use_column_width=True)
+                st.image(img, use_container_width=True)
             else:
                 st.warning(f"Conveyor image not found at {input_path}")
                 
@@ -339,7 +348,7 @@ def main():
             ref_path = os.path.join(DATA_DIR, "input", lesson["input_filename"])
             if os.path.exists(ref_path):
                 img = Image.open(ref_path)
-                st.image(img, use_column_width=True)
+                st.image(img, use_container_width=True)
             else:
                 st.warning(f"Reference image not found at {ref_path}")
         with col2:
@@ -347,7 +356,7 @@ def main():
             live_path = os.path.join(DATA_DIR, "input", lesson["output_filename"])
             if os.path.exists(live_path):
                 img = Image.open(live_path)
-                st.image(img, use_column_width=True)
+                st.image(img, use_container_width=True)
             else:
                 st.warning(f"Live image not found at {live_path}")
                 
@@ -400,7 +409,7 @@ def main():
                             draw.ellipse((x1-2, y1-2, x1+2, y1+2), fill=(255, 0, 0))
                             draw.ellipse((x2-2, y2-2, x2+2, y2+2), fill=(255, 0, 0))
                             
-                        st.image(combined_img, use_column_width=True)
+                        st.image(combined_img, use_container_width=True)
                 except Exception as e:
                     st.error(f"Workflow failed: {e}")
                     
@@ -443,7 +452,7 @@ def main():
                     st.subheader("Live Feed (ArUco Marker)")
                     if os.path.exists(aruco_path):
                         img = Image.open(aruco_path)
-                        st.image(img, use_column_width=True)
+                        st.image(img, use_container_width=True)
                 
                 with col2:
                     st.subheader("Pose Estimation Overlay")
@@ -470,7 +479,7 @@ def main():
                                         # Z Axis - Blue
                                         draw.line([origin, z_pt], fill=(0, 0, 255), width=3)
                                         
-                                    st.image(img, use_column_width=True)
+                                    st.image(img, use_container_width=True)
                                     st.write(f"**Rotational Vector (rvec):** {pose.get('rvec')}")
                                     st.write(f"**Translational Vector (tvec):** {pose.get('tvec')}")
                                 else:
@@ -483,7 +492,7 @@ def main():
             st.subheader("RGB Image")
             rgb_path = os.path.join(DATA_DIR, "input", "rgb_scene.png")
             if os.path.exists(rgb_path):
-                st.image(Image.open(rgb_path), use_column_width=True)
+                st.image(Image.open(rgb_path), use_container_width=True)
             else:
                 st.warning(f"RGB image not found at {rgb_path}")
                 
@@ -498,7 +507,7 @@ def main():
                 if depth_img is not None:
                     depth_display = cv2.normalize(depth_img, None, 0, 255, cv2.NORM_MINMAX, dtype=cv2.CV_8U)
                     depth_colored = cv2.applyColorMap(depth_display, cv2.COLORMAP_JET)
-                    st.image(depth_colored, channels="BGR", use_column_width=True)
+                    st.image(depth_colored, channels="BGR", use_container_width=True)
             else:
                 st.warning(f"Depth image not found at {depth_path}")
     elif lesson.get("id") == 8:
@@ -565,6 +574,29 @@ def main():
             components.html(html_code, height=400)
         else:
             st.warning(f"Input point cloud not found at {input_path}")
+    elif lesson.get("id") == 9:
+        st.subheader("Harvester Systems Dashboard")
+        col1, col2 = st.columns(2)
+        with col1:
+            st.markdown("### 2D RGB Vision Feed")
+            rgb_path = os.path.join(DATA_DIR, "input", "lesson9_rgb.png")
+            if os.path.exists(rgb_path):
+                st.image(Image.open(rgb_path), use_container_width=True)
+            else:
+                st.warning("RGB feed not found.")
+        with col2:
+            st.markdown("### 3D Depth Feed")
+            depth_path = os.path.join(DATA_DIR, "input", "lesson9_depth.png")
+            if os.path.exists(depth_path):
+                import cv2
+                import numpy as np
+                depth_img = cv2.imread(depth_path, cv2.IMREAD_ANYDEPTH)
+                if depth_img is not None:
+                    depth_display = cv2.normalize(depth_img, None, 0, 255, cv2.NORM_MINMAX, dtype=cv2.CV_8U)
+                    depth_colored = cv2.applyColorMap(depth_display, cv2.COLORMAP_JET)
+                    st.image(depth_colored, channels="BGR", use_container_width=True)
+            else:
+                st.warning("Depth feed not found.")
     else:
         col1, col2 = st.columns(2)
         
@@ -572,7 +604,7 @@ def main():
             st.subheader("Input Image")
             if os.path.exists(input_path):
                 img = Image.open(input_path)
-                st.image(img, use_column_width=True)
+                st.image(img, use_container_width=True)
             else:
                 st.warning(f"Input image not found at {input_path}")
                 
@@ -582,7 +614,7 @@ def main():
             output_placeholder = st.empty()
             if os.path.exists(output_path):
                 img = Image.open(output_path)
-                output_placeholder.image(img, use_column_width=True)
+                output_placeholder.image(img, use_container_width=True)
             else:
                 output_placeholder.info("Run the workflow to generate output.")
             
@@ -706,11 +738,159 @@ def main():
                             st.subheader("Temporal Output Payload")
                             st.json(result)
                             
+                    elif lesson.get("id") == 9:
+                        st.subheader("Harvester Systems Dashboard - Telemetry")
+                        
+                        col1, col2 = st.columns(2)
+                        with col1:
+                            st.markdown("**Target Mask & Bounding Boxes**")
+                            rgb_path = os.path.join(DATA_DIR, "input", "lesson9_rgb.png")
+                            if os.path.exists(rgb_path) and isinstance(result, dict) and "bounding_boxes" in result:
+                                img = Image.open(rgb_path).convert("RGB")
+                                draw = ImageDraw.Draw(img)
+                                for box in result["bounding_boxes"]:
+                                    x, y, w, h = box["x"], box["y"], box["width"], box["height"]
+                                    draw.rectangle([x, y, x+w, y+h], outline="red", width=3)
+                                st.image(img, use_container_width=True)
+                                
+                        with col2:
+                            st.markdown("**3D Coordinates Payload (X, Y, Z)**")
+                            if isinstance(result, dict) and "coords" in result:
+                                import pandas as pd
+                                df = pd.DataFrame(result["coords"])
+                                st.dataframe(df, use_container_width=True)
+                                # code block to inject
+                                if True:
+                                    try:
+                                        import cv2
+                                        import numpy as np
+                                        import json
+                                        import streamlit.components.v1 as components
+            
+                                        rgb_small = cv2.resize(cv2.imread(rgb_path), (0,0), fx=0.25, fy=0.25)
+                                        depth_small = cv2.resize(cv2.imread(depth_path, cv2.IMREAD_ANYDEPTH), (0,0), fx=0.25, fy=0.25, interpolation=cv2.INTER_NEAREST)
+            
+                                        fx_cam, fy_cam = 500.0/4.0, 500.0/4.0
+                                        cx_cam, cy_cam = 320.0/4.0, 240.0/4.0
+                                        scale = 1000.0
+            
+                                        h, w = depth_small.shape
+                                        y, x = np.mgrid[0:h, 0:w]
+            
+                                        Z = depth_small.astype(np.float32) / scale
+                                        valid = Z > 0
+            
+                                        X = (x[valid] - cx_cam) * Z[valid] / fx_cam
+                                        Y = (y[valid] - cy_cam) * Z[valid] / fy_cam
+                                        Z = Z[valid]
+            
+                                        positions = np.stack((X, Y, Z), axis=-1).flatten().tolist()
+            
+                                        colors_bgr = rgb_small[valid]
+                                        colors_rgb = colors_bgr[:, ::-1]
+                                        colors = (colors_rgb.astype(np.float32) / 255.0).flatten().tolist()
+            
+                                        target_coords = []
+                                        if "coords" in result:
+                                            for coord in result["coords"]:
+                                                target_coords.append({"x": coord["X"], "y": coord["Y"], "z": coord["Z"]})
+            
+                                        html_code = f"""
+                                        <!DOCTYPE html>
+                                        <html>
+                                        <head>
+                                            <style>body {{ margin: 0; overflow: hidden; }} canvas {{ display: block; }}</style>
+                                            <script type="importmap">
+                                              {{
+                                                "imports": {{
+                                                  "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                                                  "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+                                                }}
+                                              }}
+                                            </script>
+                                        </head>
+                                        <body>
+                                            <script type="module">
+                                            import * as THREE from 'three';
+                                            import {{ OrbitControls }} from 'three/addons/controls/OrbitControls.js';
+
+                                            const scene = new THREE.Scene();
+                                            scene.background = new THREE.Color(0x0e1117);
+                                            const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.01, 10);
+                                            const renderer = new THREE.WebGLRenderer({{ antialias: true }});
+                                            renderer.setSize(window.innerWidth, window.innerHeight);
+                                            document.body.appendChild(renderer.domElement);
+                                            const controls = new OrbitControls(camera, renderer.domElement);
+
+                                            const geometry = new THREE.BufferGeometry();
+                                            const positions = new Float32Array({json.dumps(positions)});
+                                            const colors = new Float32Array({json.dumps(colors)});
+                                            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+                                            geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+                                            const material = new THREE.PointsMaterial({{ size: 0.008, vertexColors: true }});
+                                            const pointCloud = new THREE.Points(geometry, material);
+
+                                            const targets = {json.dumps(target_coords)};
+                                            targets.forEach(t => {{
+                                                const sphereGeometry = new THREE.SphereGeometry(0.015, 16, 16);
+                                                const sphereMaterial = new THREE.MeshBasicMaterial({{ color: 0xff3333 }});
+                                                const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+                                                sphere.position.set(t.x, t.y, t.z);
+                    
+                                                const boxGeometry = new THREE.BoxGeometry(0.04, 0.04, 0.04);
+                                                const edges = new THREE.EdgesGeometry(boxGeometry);
+                                                const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({{ color: 0x00ff00 }}));
+                                                line.position.set(t.x, t.y, t.z);
+                    
+                                                pointCloud.add(sphere);
+                                                pointCloud.add(line);
+                                            }});
+
+                                            pointCloud.rotation.x = Math.PI;
+
+                                            geometry.computeBoundingBox();
+                                            const center = new THREE.Vector3();
+                                            geometry.boundingBox.getCenter(center);
+                
+                                            pointCloud.position.set(-center.x, center.y, center.z);
+                
+                                            scene.add(pointCloud);
+
+                                            camera.position.z = 0.8;
+                                            camera.position.y = 0.2;
+                                            controls.target.set(0, 0, 0);
+
+                                            function animate() {{
+                                                requestAnimationFrame(animate);
+                                                controls.update();
+                                                renderer.render(scene, camera);
+                                            }}
+                                            animate();
+                                            </script>
+                                        </body>
+                                        </html>
+                                        """
+            
+                                        st.subheader("3D Interactive Viewer")
+                                        components.html(html_code, height=500)
+            
+                                    except Exception as e:
+                                        st.error(f"Failed to generate 3D visualization: {{e}}")
+
+                                
+                        if isinstance(result, dict):
+                            if result.get("status") == "SUCCESS":
+                                st.success(f"✅ PLC Handoff: {result.get('message')}")
+                            elif result.get("status") == "PLC_HANDOFF_FAILED":
+                                st.error(f"❌ PLC Handoff Failed: {result.get('error')}. Temporal will retry this step.")
+                            else:
+                                st.warning(f"Workflow ended with status: {result.get('status')} - {result.get('message', '')}")
                     else:
                         if os.path.exists(output_path):
                             # Force image reload by appending a query param or just re-opening
                             img = Image.open(output_path)
-                            output_placeholder.image(img, use_column_width=True)
+                            output_placeholder.image(img, use_container_width=True)
                         
                     if isinstance(result, dict) and "sweep_results" in result:
                         st.subheader("Performance Profiling (C++ Execution)")
