@@ -126,3 +126,18 @@ lessons:
     input_filename: "lesson9_rgb.png"
     output_filename: "lesson9_depth.png"
 
+  - id: 10
+    title: "Lesson 10: 3D Template Matching & 6D Pose Estimation"
+    narrative: |
+      **Mission 10: Workcell Part Localization**
+      
+      A Fanuc robotic arm needs to pick up a specific, complexly shaped component from a bin containing multiple different parts.
+      
+      Your mission is to load a perfect 3D template of the target component (simulating a point cloud generated from a SolidWorks CAD export). Then, load a noisy 3D scene captured by the workcell's depth sensor. Use OpenCV's PPF algorithm to find the template within the scene and calculate its full 6D pose ($X, Y, Z, R_x, R_y, R_z$) so the system can pass a valid transformation matrix down to the ROS2 control node.
+      
+      **Temporal Integration: Heatbeating Long-Running Tasks**
+      Because 3D point pair feature hashing and ICP refinement can take several seconds and are CPU-bound, the Python Temporal activity must send periodic heartbeats from the blocking C++ execution thread, proving to the orchestrator that the worker hasn't frozen.
+    workflow_name: "PoseEstimationWorkflow"
+    input_filename: "lesson10_scene.ply"
+    output_filename: "lesson10_template.ply"
+

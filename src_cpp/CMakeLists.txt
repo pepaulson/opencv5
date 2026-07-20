@@ -50,7 +50,8 @@ set_target_properties(cv_lab_2d PROPERTIES SUFFIX "${PYTHON_EXT_SUFFIX}")
 add_library(cv_lab_3d SHARED 
     3d_track/module.cpp
     3d_track/lesson7_depth.cpp
-    3d_track/lesson8_normals.cpp)
+    3d_track/lesson8_normals.cpp
+    3d_track/lesson10_ppf_matching.cpp)
 target_link_libraries(cv_lab_3d ${OpenCV_LIBS})
 set_target_properties(cv_lab_3d PROPERTIES PREFIX "")
 set_target_properties(cv_lab_3d PROPERTIES SUFFIX "${PYTHON_EXT_SUFFIX}")

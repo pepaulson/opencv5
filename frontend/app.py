@@ -597,6 +597,115 @@ def main():
                     st.image(depth_colored, channels="BGR", use_container_width=True)
             else:
                 st.warning("Depth feed not found.")
+    elif lesson.get("id") == 10:
+        st.info("3D Template Matching & 6D Pose Estimation. Adjust PPF parameters and click 'Run Temporal Workflow' below.")
+        
+        col_gen1, col_gen2 = st.columns(2)
+        with col_gen1:
+            num_parts = st.slider("Target Instances in Scene", 1, 5, 1)
+        with col_gen2:
+            clutter_level = st.slider("Clutter Level (Background Points)", 100, 3000, 1000, step=100)
+            
+        if st.button("Generate New Random Scene"):
+            import sys
+            if "/app/data/input" not in sys.path:
+                sys.path.append("/app/data/input")
+            import generate_plys
+            s_points, s_normals, gt_poses = generate_plys.generate_scene(num_parts=num_parts, clutter_points=clutter_level)
+            generate_plys.save_ply(os.path.join(DATA_DIR, "input", "lesson10_scene.ply"), s_points, s_normals)
+            st.success(f"Generated new scene with {num_parts} part(s) and {clutter_level} clutter points.")
+            
+        st.markdown("---")
+        payload["relative_sampling_step"] = st.slider("Relative Sampling Step (Precision vs Speed)", 0.01, 0.10, 0.025, 0.005)
+        payload["relative_distance_step"] = st.slider("Relative Distance Step", 0.01, 0.20, 0.05, 0.01)
+        
+        # Initial 3D Viewer (Pre-execution)
+        template_ply_path = os.path.join(DATA_DIR, "input", "lesson10_template.ply")
+        scene_ply_path = os.path.join(DATA_DIR, "input", "lesson10_scene.ply")
+        if os.path.exists(scene_ply_path) and os.path.exists(template_ply_path):
+            with open(scene_ply_path, "r") as f:
+                scene_ply = f.read()
+            with open(template_ply_path, "r") as f:
+                template_ply = f.read()
+                
+            html_code = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="utf-8">
+                <style>
+                    body {{ margin: 0; overflow: hidden; background-color: #1e1e1e; }}
+                    canvas {{ display: block; width: 100vw; height: 100vh; }}
+                </style>
+                <script type="importmap">
+                  {{
+                    "imports": {{
+                      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
+                      "lil-gui": "https://unpkg.com/lil-gui@0.19.1/dist/lil-gui.esm.min.js"
+                    }}
+                  }}
+                </script>
+            </head>
+            <body>
+                <script type="module">
+                    import * as THREE from 'three';
+                    import {{ PLYLoader }} from 'three/addons/loaders/PLYLoader.js';
+                    import {{ OrbitControls }} from 'three/addons/controls/OrbitControls.js';
+                    import GUI from 'lil-gui';
+
+                    const scene = new THREE.Scene();
+                    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                    const renderer = new THREE.WebGLRenderer({{ antialias: true }});
+                    renderer.setSize(window.innerWidth, window.innerHeight);
+                    document.body.appendChild(renderer.domElement);
+
+                    const controls = new OrbitControls(camera, renderer.domElement);
+                    
+                    const axesHelper = new THREE.AxesHelper(1);
+                    scene.add(axesHelper);
+                    const gridHelper = new THREE.GridHelper(2, 20);
+                    scene.add(gridHelper);
+                    
+                    const loader = new PLYLoader();
+                    
+                    // Load Scene (Gray)
+                    const sceneGeo = loader.parse(new TextEncoder().encode(`{scene_ply}`).buffer);
+                    const sceneMat = new THREE.PointsMaterial({{ size: 0.02, color: 0x888888 }});
+                    const scenePoints = new THREE.Points(sceneGeo, sceneMat);
+                    scene.add(scenePoints);
+                    
+                    // Load Original Template (Blue, at origin)
+                    const tplGeo = loader.parse(new TextEncoder().encode(`{template_ply}`).buffer);
+                    const tplMatBlue = new THREE.PointsMaterial({{ size: 0.02, color: 0x0000ff }});
+                    const tplPointsBlue = new THREE.Points(tplGeo, tplMatBlue);
+                    scene.add(tplPointsBlue);
+                    
+                    const gui = new GUI();
+                    const settings = {{ showScene: true, showTemplate: true, showHelpers: true }};
+                    gui.add(settings, 'showScene').name('Scene Cloud').onChange(v => scenePoints.visible = v);
+                    gui.add(settings, 'showTemplate').name('Original Template').onChange(v => tplPointsBlue.visible = v);
+                    gui.add(settings, 'showHelpers').name('Axes & Grid').onChange(v => {{
+                        axesHelper.visible = v; gridHelper.visible = v;
+                    }});
+                    
+                    camera.position.z = 1.5;
+                    camera.position.y = 0.8;
+                    camera.position.x = 0.8;
+                    controls.target.set(0.5, 0, 0);
+                    
+                    function animate() {{
+                        requestAnimationFrame(animate);
+                        controls.update();
+                        renderer.render(scene, camera);
+                    }}
+                    animate();
+                </script>
+            </body>
+            </html>
+            """
+            st.subheader("Initial 3D Workspace (Pre-Execution)")
+            components.html(html_code, height=500)
     else:
         col1, col2 = st.columns(2)
         
@@ -765,7 +874,6 @@ def main():
                                         import cv2
                                         import numpy as np
                                         import json
-                                        import streamlit.components.v1 as components
             
                                         rgb_small = cv2.resize(cv2.imread(rgb_path), (0,0), fx=0.25, fy=0.25)
                                         depth_small = cv2.resize(cv2.imread(depth_path, cv2.IMREAD_ANYDEPTH), (0,0), fx=0.25, fy=0.25, interpolation=cv2.INTER_NEAREST)
@@ -886,6 +994,189 @@ def main():
                                 st.error(f"❌ PLC Handoff Failed: {result.get('error')}. Temporal will retry this step.")
                             else:
                                 st.warning(f"Workflow ended with status: {result.get('status')} - {result.get('message', '')}")
+                    elif lesson.get("id") == 10:
+                        if isinstance(result, dict) and result.get("success"):
+                            st.subheader("6D Pose Estimation Dashboard - Telemetry")
+                            
+                            poses_list = result.get("poses", [result])
+                            
+                            st.write(f"**Identified {len(poses_list)} Target Instances**")
+                            import pandas as pd
+                            
+                            t_data = [p.get("translation", {"x":0, "y":0, "z":0}) for p in poses_list]
+                            r_data = [p.get("rotation_euler_deg", {"rx":0, "ry":0, "rz":0}) for p in poses_list]
+                            
+                            col1, col2 = st.columns(2)
+                            with col1:
+                                st.markdown("**Translation Vectors (X, Y, Z)**")
+                                st.dataframe(pd.DataFrame(t_data), use_container_width=True)
+                            with col2:
+                                st.markdown("**Rotation Euler Angles (Rx, Ry, Rz degrees)**")
+                                st.dataframe(pd.DataFrame(r_data), use_container_width=True)
+                                
+                            st.markdown("**Transformation Matrices (4x4)**")
+                            for i, p in enumerate(poses_list):
+                                with st.expander(f"Instance {i+1} Matrix"):
+                                    st.dataframe(pd.DataFrame(p.get("pose_matrix", [])), use_container_width=True)
+
+                            # WebGL visualization
+                            if os.path.exists(input_path) and os.path.exists(output_path):
+                                with open(input_path, "r") as f:
+                                    scene_ply = f.read()
+                                with open(output_path, "r") as f:
+                                    template_ply = f.read()
+                                    
+                                poses_list = result.get("poses", [])
+                                if not poses_list:
+                                    # Fallback
+                                    poses_list = [result]
+                                    
+                                import json
+                                matrices = []
+                                for p in poses_list:
+                                    matrix_flat = []
+                                    for row in p.get("pose_matrix", []):
+                                        matrix_flat.extend(row)
+                                    matrices.append(matrix_flat)
+                                matrices_json = json.dumps(matrices)
+                                
+                                html_code = f"""
+                                <!DOCTYPE html>
+                                <html>
+                                <head>
+                                    <meta charset="utf-8">
+                                    <title>3D Point Cloud Viewer</title>
+                                    <style>
+                                        body {{ margin: 0; overflow: hidden; background-color: #1e1e1e; }}
+                                        canvas {{ display: block; width: 100vw; height: 100vh; }}
+                                    </style>
+                                    <script type="importmap">
+                                      {{
+                                        "imports": {{
+                                          "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                                          "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
+                                          "lil-gui": "https://unpkg.com/lil-gui@0.19.1/dist/lil-gui.esm.min.js"
+                                        }}
+                                      }}
+                                    </script>
+                                </head>
+                                <body>
+                                    <script type="module">
+                                        import * as THREE from 'three';
+                                        import {{ PLYLoader }} from 'three/addons/loaders/PLYLoader.js';
+                                        import {{ OrbitControls }} from 'three/addons/controls/OrbitControls.js';
+                                        import GUI from 'lil-gui';
+
+                                        const scene = new THREE.Scene();
+                                        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                                        const renderer = new THREE.WebGLRenderer({{ antialias: true }});
+                                        renderer.setSize(window.innerWidth, window.innerHeight);
+                                        document.body.appendChild(renderer.domElement);
+
+                                        const controls = new OrbitControls(camera, renderer.domElement);
+                                        
+                                        // Helpers
+                                        const axesHelper = new THREE.AxesHelper(1);
+                                        scene.add(axesHelper);
+                                        const gridHelper = new THREE.GridHelper(2, 20);
+                                        scene.add(gridHelper);
+                                        
+                                        const loader = new PLYLoader();
+                                        
+                                        // Load Scene (Gray)
+                                        const sceneGeo = loader.parse(new TextEncoder().encode(`{scene_ply}`).buffer);
+                                        const sceneMat = new THREE.PointsMaterial({{ size: 0.02, color: 0x888888 }});
+                                        const scenePoints = new THREE.Points(sceneGeo, sceneMat);
+                                        scene.add(scenePoints);
+                                        
+                                        // Load Original Template (Blue, at origin)
+                                        const tplGeo = loader.parse(new TextEncoder().encode(`{template_ply}`).buffer);
+                                        const tplMatBlue = new THREE.PointsMaterial({{ size: 0.02, color: 0x0000ff }});
+                                        const tplPointsBlue = new THREE.Points(tplGeo, tplMatBlue);
+                                        scene.add(tplPointsBlue);
+                                        
+                                        const matrices = {matrices_json};
+                                        const matchedGroup = new THREE.Group();
+                                        scene.add(matchedGroup);
+                                        
+                                        const targets = [];
+                                        
+                                        // Load Matched Templates (Green)
+                                        for(let i=0; i<matrices.length; i++) {{
+                                            const tplMatGreen = new THREE.PointsMaterial({{ size: 0.03, color: 0x00ff00 }});
+                                            const tplPointsGreen = new THREE.Points(tplGeo, tplMatGreen);
+                                            matchedGroup.add(tplPointsGreen);
+                                            
+                                            const matrixArr = matrices[i];
+                                            const m = new THREE.Matrix4();
+                                            m.set(
+                                                matrixArr[0], matrixArr[1], matrixArr[2], matrixArr[3],
+                                                matrixArr[4], matrixArr[5], matrixArr[6], matrixArr[7],
+                                                matrixArr[8], matrixArr[9], matrixArr[10], matrixArr[11],
+                                                matrixArr[12], matrixArr[13], matrixArr[14], matrixArr[15]
+                                            );
+                                            
+                                            const targetPos = new THREE.Vector3();
+                                            const targetQuat = new THREE.Quaternion();
+                                            const targetScale = new THREE.Vector3();
+                                            m.decompose(targetPos, targetQuat, targetScale);
+                                            
+                                            targets.push({{ mesh: tplPointsGreen, pos: targetPos, quat: targetQuat }});
+                                        }}
+                                        
+                                        // GUI
+                                        const gui = new GUI();
+                                        const settings = {{
+                                            showScene: true,
+                                            showTemplate: true,
+                                            showMatched: true,
+                                            showHelpers: true
+                                        }};
+                                        gui.add(settings, 'showScene').name('Scene Cloud').onChange(v => scenePoints.visible = v);
+                                        gui.add(settings, 'showTemplate').name('Original Template').onChange(v => tplPointsBlue.visible = v);
+                                        gui.add(settings, 'showMatched').name('Matched Templates').onChange(v => matchedGroup.visible = v);
+                                        gui.add(settings, 'showHelpers').name('Axes & Grid').onChange(v => {{
+                                            axesHelper.visible = v;
+                                            gridHelper.visible = v;
+                                        }});
+                                        
+                                        let animProgress = 0.0;
+                                        const startQuat = new THREE.Quaternion();
+                                        const startPos = new THREE.Vector3(0,0,0);
+                                        
+                                        camera.position.z = 1.5;
+                                        camera.position.y = 0.8;
+                                        camera.position.x = 0.8;
+                                        controls.target.set(0.5, 0, 0);
+                                        
+                                        function animate() {{
+                                            requestAnimationFrame(animate);
+                                            
+                                            if (animProgress < 1.0) {{
+                                                animProgress += 0.005; // speed
+                                                if (animProgress > 1.0) animProgress = 1.0;
+                                                // easeInOutCubic
+                                                const t = animProgress < 0.5 ? 4 * animProgress * animProgress * animProgress : 1 - Math.pow(-2 * animProgress + 2, 3) / 2;
+                                                
+                                                for(let i=0; i<targets.length; i++) {{
+                                                    targets[i].mesh.position.lerpVectors(startPos, targets[i].pos, t);
+                                                    targets[i].mesh.quaternion.slerpQuaternions(startQuat, targets[i].quat, t);
+                                                }}
+                                            }}
+                                            
+                                            controls.update();
+                                            renderer.render(scene, camera);
+                                        }}
+                                        animate();
+                                    </script>
+                                </body>
+                                </html>
+                                """
+                                st.subheader(f"3D Workspace Viewer (Found {len(poses_list)} Instances)")
+                                components.html(html_code, height=600)
+                        else:
+                            st.error(f"Failed to estimate pose: {result.get('error')}")
+                            
                     else:
                         if os.path.exists(output_path):
                             # Force image reload by appending a query param or just re-opening

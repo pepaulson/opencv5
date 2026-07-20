@@ -1,5 +1,6 @@
 import asyncio
 import os
+import concurrent.futures
 from temporalio.client import Client
 from temporalio.worker import Worker
 from workflows.track_2d.activities import ingest_image, process_image, save_output, process_lesson2_image, process_grayscale, process_sobel, process_canny, process_lesson4_contours
@@ -9,6 +10,7 @@ from workflows.track_2d.lesson6 import CalibrationServiceWorkflow
 from workflows.track_2d.activities import calibrate_camera, estimate_pose
 from workflows.track_3d.lesson7 import PointCloudGenerationWorkflow, generate_point_cloud_activity
 from workflows.track_3d.lesson8 import GraspVectorWorkflow, compute_ransac_plane_activity, bin_shake_activity
+from workflows.track_3d.lesson10 import PoseEstimationWorkflow, ppf_match_activity_sync, format_pose_activity
 from workflows.integration.lesson9 import AutomatedHarvestWorkflow, detect_harvest_targets_activity, extract_3d_coordinates_activity, plc_handoff_activity
 
 async def main():
@@ -16,15 +18,19 @@ async def main():
     print(f"Connecting to Temporal host: {temporal_host}")
     client = await Client.connect(temporal_host)
     
-    worker = Worker(
-        client,
-        task_queue="cv-learning-tasks",
-        workflows=[LessonOneWorkflow, VisionCalibrationWorkflow, PathfinderEdgeWorkflow, PartLocalizationWorkflow, PartIdentificationWorkflow, CalibrationServiceWorkflow, PointCloudGenerationWorkflow, GraspVectorWorkflow, AutomatedHarvestWorkflow],
-        activities=[ingest_image, process_image, save_output, process_lesson2_image, process_grayscale, process_sobel, process_canny, process_lesson4_contours, process_lesson5_features, calibrate_camera, estimate_pose, generate_point_cloud_activity, compute_ransac_plane_activity, bin_shake_activity, detect_harvest_targets_activity, extract_3d_coordinates_activity, plc_handoff_activity],
-    )
-    
-    print("Starting Temporal worker...")
-    await worker.run()
+    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as activity_executor:
+        from temporalio.worker import UnsandboxedWorkflowRunner
+        worker = Worker(
+            client,
+            task_queue="cv-learning-tasks",
+            workflows=[LessonOneWorkflow, VisionCalibrationWorkflow, PathfinderEdgeWorkflow, PartLocalizationWorkflow, PartIdentificationWorkflow, CalibrationServiceWorkflow, PointCloudGenerationWorkflow, GraspVectorWorkflow, AutomatedHarvestWorkflow, PoseEstimationWorkflow],
+            activities=[ingest_image, process_image, save_output, process_lesson2_image, process_grayscale, process_sobel, process_canny, process_lesson4_contours, process_lesson5_features, calibrate_camera, estimate_pose, generate_point_cloud_activity, compute_ransac_plane_activity, bin_shake_activity, detect_harvest_targets_activity, extract_3d_coordinates_activity, plc_handoff_activity, ppf_match_activity_sync, format_pose_activity],
+            activity_executor=activity_executor,
+            workflow_runner=UnsandboxedWorkflowRunner(),
+        )
+        
+        print("Starting Temporal worker...")
+        await worker.run()
 
 if __name__ == "__main__":
     asyncio.run(main())

@@ -31,6 +31,7 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /build
 # Note: Using 5.x branch. We add placeholders for CUDA/Hardware acceleration (WITH_CUDA=OFF for now)
 RUN git clone --depth 1 -b 5.x https://github.com/opencv/opencv.git && \
+    git clone --depth 1 -b 5.x https://github.com/opencv/opencv_contrib.git && \
     mkdir -p opencv/build && cd opencv/build && \
     cmake -D CMAKE_BUILD_TYPE=Release \
           -D CMAKE_INSTALL_PREFIX=/usr/local \
@@ -39,9 +40,10 @@ RUN git clone --depth 1 -b 5.x https://github.com/opencv/opencv.git && \
           -D BUILD_PERF_TESTS=OFF \
           -D WITH_CUDA=OFF \
           -D BUILD_EXAMPLES=OFF \
+          -D OPENCV_EXTRA_MODULES_PATH=../../opencv_contrib/modules \
           .. && \
     make -j$(nproc) && make install && ldconfig && \
-    cd /build && rm -rf opencv
+    cd /build && rm -rf opencv opencv_contrib
 
 # Set up Python environment
 WORKDIR /app
